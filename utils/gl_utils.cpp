@@ -29,7 +29,7 @@ Shader::Shader(const char *vertex_path, const char *fragment_path) {
     glCompileShader(vertex_shader);
 
     // Check the compilation of vertex shader
-    Shader::check_errors(vertex_shader, "VERTEX");
+    this->check_errors(vertex_shader, "VERTEX");
 
     // Setup fragment shader
     unsigned int fragment_shader;
@@ -38,26 +38,38 @@ Shader::Shader(const char *vertex_path, const char *fragment_path) {
     glCompileShader(fragment_shader);
 
     // Check the compilation of fragment shader
-    Shader::check_errors(fragment_shader, "FRAGMENT");
+    this->check_errors(fragment_shader, "FRAGMENT");
 
     // Setup shader program
-    Shader::id = glCreateProgram();
-    glAttachShader(Shader::id, vertex_shader);
-    glAttachShader(Shader::id, fragment_shader);
-    glLinkProgram(Shader::id);
+    this->id = glCreateProgram();
+    glAttachShader(this->id, vertex_shader);
+    glAttachShader(this->id, fragment_shader);
+    glLinkProgram(this->id);
 
     // Check the linking of shader program
-    Shader::check_errors(Shader::id, "PROGRAM");
+    this->check_errors(this->id, "PROGRAM");
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 }
 
+void Shader::set_transformations(glm::mat4 model, glm::mat4 view, glm::mat4 projection) {
+    this->model = model;
+    this->view = view;
+    this->projection = projection;
+    this->model_location = glGetUniformLocation(this->id, "model");
+    this->view_location = glGetUniformLocation(this->id, "view");
+    this->projection_location = glGetUniformLocation(this->id, "projection");
+}
+
 void Shader::use() {
-    glUseProgram(Shader::id);
+    glUseProgram(this->id);
+    glUniformMatrix4fv(this->model_location, 1, GL_FALSE, glm::value_ptr(this->model));
+    glUniformMatrix4fv(this->view_location, 1, GL_FALSE, glm::value_ptr(this->view));
+    glUniformMatrix4fv(this->projection_location, 1, GL_FALSE, glm::value_ptr(this->projection));
 }
 
 void Shader::destroy() {
-    glDeleteProgram(Shader::id);
+    glDeleteProgram(this->id);
 }
 
 void Shader::check_errors(unsigned int shader, std::string type) {

@@ -1,5 +1,4 @@
 #include "utils/gl_utils.h"
-#include <iostream>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -30,7 +29,22 @@ int main() {
         return -1;
     }
 
+    // Enable depth check
+    glEnable(GL_DEPTH_TEST);
+
+    // Construct shader
     Shader shader("shaders/vertex_shader.cpp", "shaders/fragment_shader.cpp");
+
+    // Create transformations
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f,
+                                            100.0f);
+
+    // Set transformations
+    shader.set_transformations(model, view, projection);
 
     // Setup vertices and indices
     float vertices[] = {
@@ -67,7 +81,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         // Clear buffer
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Draw
         shader.use();

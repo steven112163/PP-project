@@ -9,8 +9,7 @@ Parallel Programming Final Project
 
 ```shell=
 sudo apt update
-sudo apt install libglu1-mesa-dev freeglut3-dev mesa-common-dev
-sudo apt install cmake xorg-dev pkg-config
+sudo apt install libglu1-mesa-dev freeglut3-dev mesa-common-dev libglm-dev cmake xorg-dev pkg-config
 ```
 
 ### Install GLFW
