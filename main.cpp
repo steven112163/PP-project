@@ -1,6 +1,8 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "utils/gl_utils.h"
 #include <iostream>
+
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -12,87 +14,23 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window
-    GLFWwindow *window = glfwCreateWindow(800, 600, "Ripple Simulation", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Ripple Simulation", NULL, NULL);
     if (window == NULL) {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Load OpenGL
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        std::cerr << "Failed to initialize GLAD" << std::endl;
         glfwTerminate();
         return -1;
     }
 
-    // Set window size
-    glViewport(0, 0, 800, 600);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    // Setup vertex shader
-    const char *vertex_shader_source = "#version 330 core\n"
-                                       "layout (location = 0) in vec3 position;\n"
-                                       "void main() {\n"
-                                       "   gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
-                                       "}\0";
-    unsigned int vertex_shader;
-    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
-    glCompileShader(vertex_shader);
-
-    // Check the compilation of vertex shader
-    int success;
-    char info_log[512];
-    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << info_log << std::endl;
-        glDeleteShader(vertex_shader);
-        glfwTerminate();
-        return -1;
-    }
-
-    // Setup fragment shader
-    const char *fragment_shader_source = "#version 330 core\n"
-                                         "out vec4 color;\n"
-                                         "void main() {\n"
-                                         "    color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-                                         "}\0";
-    unsigned int fragment_shader;
-    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
-    glCompileShader(fragment_shader);
-
-    // Check the compilation of fragment shader
-    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << info_log << std::endl;
-        glDeleteShader(vertex_shader);
-        glDeleteShader(fragment_shader);
-        glfwTerminate();
-        return -1;
-    }
-
-    // Setup shader program
-    unsigned int shader_program;
-    shader_program = glCreateProgram();
-    glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
-    glLinkProgram(shader_program);
-
-    // Check the linking of shader program
-    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shader_program, 512, NULL, info_log);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << info_log << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
+    Shader shader("shaders/vertex_shader.cpp", "shaders/fragment_shader.cpp");
 
     // Setup vertices and indices
     float vertices[] = {
@@ -132,7 +70,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Draw
-        glUseProgram(shader_program);
+        shader.use();
         glBindVertexArray(vertex_attribute_object);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -145,7 +83,7 @@ int main() {
     glDeleteVertexArrays(1, &vertex_attribute_object);
     glDeleteBuffers(1, &vertex_buffer_object);
     glDeleteBuffers(1, &element_buffer_object);
-    glDeleteProgram(shader_program);
+    shader.destroy();
 
     // Terminate process
     glfwTerminate();
