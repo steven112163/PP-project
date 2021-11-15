@@ -1,4 +1,4 @@
-#include "gl_utils.h"
+#include "shader.h"
 
 Shader::Shader(const char *vertex_path, const char *fragment_path) {
     // Read files
@@ -53,11 +53,23 @@ Shader::Shader(const char *vertex_path, const char *fragment_path) {
 }
 
 void Shader::set_transformations(glm::mat4 model, glm::mat4 view, glm::mat4 projection) {
+    this->set_model(model);
+    this->set_view(view);
+    this->set_projection(projection);
+}
+
+void Shader::set_model(glm::mat4 model) {
     this->model = model;
-    this->view = view;
-    this->projection = projection;
     this->model_location = glGetUniformLocation(this->id, "model");
+}
+
+void Shader::set_view(glm::mat4 view) {
+    this->view = view;
     this->view_location = glGetUniformLocation(this->id, "view");
+}
+
+void Shader::set_projection(glm::mat4 projection) {
+    this->projection = projection;
     this->projection_location = glGetUniformLocation(this->id, "projection");
 }
 

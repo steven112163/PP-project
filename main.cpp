@@ -1,4 +1,5 @@
-#include "utils/gl_utils.h"
+#include "utils/shader.h"
+#include "utils/sphere.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -37,39 +38,29 @@ int main() {
 
     // Create transformations
     glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f,
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
+                                 glm::vec3(0.0f, 0.0f, 0.0f),
+                                 glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+                                            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT,
+                                            0.1f,
                                             100.0f);
 
     // Set transformations
     shader.set_transformations(model, view, projection);
 
-    // Setup vertices and indices
-    float vertices[] = {
-            0.5f, 0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            -0.5f, -0.5f, 0.0f,
-            -0.5f, 0.5f, 0.0f
-    };
-    unsigned int indices[] = {
-            0, 1, 3,
-            1, 2, 3
-    };
+    // Setup sphere
+    Sphere sphere(6);
 
-    // Generate vertex buffer, vertex attribute, and element buffer
-    unsigned int vertex_buffer_object, vertex_attribute_object, element_buffer_object;
+    // Generate vertex buffer, and vertex attribute
+    unsigned int vertex_buffer_object, vertex_attribute_object;
     glGenVertexArrays(1, &vertex_attribute_object);
     glGenBuffers(1, &vertex_buffer_object);
-    glGenBuffers(1, &element_buffer_object);
 
     // Bind buffers and attributes
     glBindVertexArray(vertex_attribute_object);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_object);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sphere.get_num_of_vertices(), sphere.get_vertices(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 
@@ -77,16 +68,25 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    // Timing
+    float delta_time = 0.0f;
+    float last_frame = 0.0f;
+
     // Start rendering
     while (!glfwWindowShouldClose(window)) {
+        // Get delta time
+        float current_frame = glfwGetTime();
+        delta_time = current_frame - last_frame;
+        last_frame = current_frame;
+
         // Clear buffer
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Draw
         shader.use();
         glBindVertexArray(vertex_attribute_object);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, sphere.get_num_of_vertices());
 
         // Display result buffer
         glfwSwapBuffers(window);
@@ -96,7 +96,6 @@ int main() {
     // De-allocate all resources
     glDeleteVertexArrays(1, &vertex_attribute_object);
     glDeleteBuffers(1, &vertex_buffer_object);
-    glDeleteBuffers(1, &element_buffer_object);
     shader.destroy();
 
     // Terminate process
