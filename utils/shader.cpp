@@ -52,10 +52,14 @@ Shader::Shader(const char *vertex_path, const char *fragment_path) {
     glDeleteShader(fragment_shader);
 }
 
-void Shader::set_transformations(glm::mat4 model, glm::mat4 view, glm::mat4 projection) {
+void Shader::set_transformations(glm::mat4 model,
+                                 glm::mat4 view,
+                                 glm::mat4 projection,
+                                 glm::mat3 normal_matrix) {
     this->set_model(model);
     this->set_view(view);
     this->set_projection(projection);
+    this->set_normal_matrix(normal_matrix);
 }
 
 void Shader::set_model(glm::mat4 model) {
@@ -73,11 +77,99 @@ void Shader::set_projection(glm::mat4 projection) {
     this->projection_location = glGetUniformLocation(this->id, "projection");
 }
 
+void Shader::set_normal_matrix(glm::mat3 normal_matrix) {
+    this->normal_matrix = normal_matrix;
+    this->normal_matrix_location = glGetUniformLocation(this->id, "normal_matrix");
+}
+
+void Shader::set_light(glm::vec3 light_position,
+                       glm::vec3 ambient_light_color,
+                       glm::vec3 diffuse_light_color,
+                       glm::vec3 specular_light_color) {
+    this->set_light_position(light_position);
+    this->set_ambient_light_color(ambient_light_color);
+    this->set_diffuse_light_color(diffuse_light_color);
+    this->set_specular_light_color(specular_light_color);
+}
+
+void Shader::set_light_position(glm::vec3 light_position) {
+    this->light_position = light_position;
+    this->light_position_location = glGetUniformLocation(this->id, "light_position");
+}
+
+void Shader::set_ambient_light_color(glm::vec3 ambient_light_color) {
+    this->ambient_light_color = ambient_light_color;
+    this->ambient_light_color_location = glGetUniformLocation(this->id, "ambient_light_color");
+}
+
+void Shader::set_diffuse_light_color(glm::vec3 diffuse_light_color) {
+    this->diffuse_light_color = diffuse_light_color;
+    this->diffuse_light_color_location = glGetUniformLocation(this->id, "diffuse_light_color");
+}
+
+void Shader::set_specular_light_color(glm::vec3 specular_light_color) {
+    this->specular_light_color = specular_light_color;
+    this->specular_light_color_location = glGetUniformLocation(this->id, "specular_light_color");
+}
+
+void Shader::set_material(glm::vec3 ambient_material_color,
+                          glm::vec3 diffuse_material_color,
+                          glm::vec3 specular_material_color,
+                          glm::float32 shininess) {
+    this->set_ambient_material_color(ambient_material_color);
+    this->set_diffuse_material_color(diffuse_material_color);
+    this->set_specular_material_color(specular_material_color);
+    this->set_shininess(shininess);
+}
+
+void Shader::set_ambient_material_color(glm::vec3 ambient_material_color) {
+    this->ambient_material_color = ambient_material_color;
+    this->ambient_material_color_location = glGetUniformLocation(this->id, "ambient_material_color");
+}
+
+void Shader::set_diffuse_material_color(glm::vec3 diffuse_material_color) {
+    this->diffuse_material_color = diffuse_material_color;
+    this->diffuse_material_color_location = glGetUniformLocation(this->id, "diffuse_material_color");
+}
+
+void Shader::set_specular_material_color(glm::vec3 specular_material_color) {
+    this->specular_material_color = specular_material_color;
+    this->specular_material_color_location = glGetUniformLocation(this->id, "specular_material_color");
+}
+
+void Shader::set_shininess(glm::float32 shininess) {
+    this->shininess = shininess;
+    this->shininess_location = glGetUniformLocation(this->id, "shininess");
+}
+
+void Shader::set_camera_position(glm::vec3 camera_position) {
+    this->camera_position = camera_position;
+    this->camera_position_location = glGetUniformLocation(this->id, "camera_position");
+}
+
 void Shader::use() {
     glUseProgram(this->id);
+
+    // Set transformations
     glUniformMatrix4fv(this->model_location, 1, GL_FALSE, glm::value_ptr(this->model));
     glUniformMatrix4fv(this->view_location, 1, GL_FALSE, glm::value_ptr(this->view));
     glUniformMatrix4fv(this->projection_location, 1, GL_FALSE, glm::value_ptr(this->projection));
+    glUniformMatrix3fv(this->normal_matrix_location, 1, GL_FALSE, glm::value_ptr(this->normal_matrix));
+
+    // Set light
+    glUniform3fv(this->light_position_location, 1, glm::value_ptr(this->light_position));
+    glUniform3fv(this->ambient_light_color_location, 1, glm::value_ptr(this->ambient_light_color));
+    glUniform3fv(this->diffuse_light_color_location, 1, glm::value_ptr(this->diffuse_light_color));
+    glUniform3fv(this->specular_light_color_location, 1, glm::value_ptr(this->specular_light_color));
+
+    // Set material
+    glUniform3fv(this->ambient_material_color_location, 1, glm::value_ptr(this->ambient_material_color));
+    glUniform3fv(this->diffuse_material_color_location, 1, glm::value_ptr(this->diffuse_material_color));
+    glUniform3fv(this->specular_material_color_location, 1, glm::value_ptr(this->specular_material_color));
+    glUniform1f(this->shininess_location, this->shininess);
+
+    // Set camera
+    glUniform3fv(this->camera_position_location, 1, glm::value_ptr(this->camera_position));
 }
 
 void Shader::destroy() {
