@@ -2,7 +2,7 @@
 in vec3 position_in_global;
 in vec3 normal_in_global;
 
-uniform vec3 light_position;
+uniform vec3 light_direction;
 uniform vec3 ambient_light_color;
 uniform vec3 diffuse_light_color;
 uniform vec3 specular_light_color;
@@ -19,7 +19,7 @@ out vec4 FragColor;
 
 void main() {
     // Calculate the vector (l) to the light source
-    vec3 vector_to_light_source = normalize(light_position - position_in_global);
+    vec3 vector_to_light_source = -normalize(light_direction);
 
     // Calculate n dot l for diffuse lighting
     float diffuse_light_weighing = max(dot(normal_in_global, vector_to_light_source), 0.0f);

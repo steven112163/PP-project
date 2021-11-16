@@ -51,11 +51,11 @@ int main() {
     shader.set_camera_position(camera_position);
 
     // Set light
-    glm::vec3 light_position(-10.0f, 10.0f, 10.0f);
+    glm::vec3 light_direction(1.0f, -1.0f, -1.0f);
     glm::vec3 ambient_light_color(0.0f, 0.0f, 0.0f);
     glm::vec3 diffuse_light_color(1.0f, 1.0f, 1.0f);
     glm::vec3 specular_light_color(1.0f, 1.0f, 1.0f);
-    shader.set_light(light_position, ambient_light_color, diffuse_light_color, specular_light_color);
+    shader.set_light(light_direction, ambient_light_color, diffuse_light_color, specular_light_color);
 
     // Set material
     int red = 102, green = 194, blue = 255;

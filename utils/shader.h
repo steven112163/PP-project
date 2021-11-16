@@ -30,12 +30,12 @@ public:
 
     void set_normal_matrix(glm::mat3 normal_matrix);
 
-    void set_light(glm::vec3 light_position,
+    void set_light(glm::vec3 light_direction,
                    glm::vec3 ambient_light_color,
                    glm::vec3 diffuse_light_color,
                    glm::vec3 specular_light_color);
 
-    void set_light_position(glm::vec3 light_position);
+    void set_light_direction(glm::vec3 light_direction);
 
     void set_ambient_light_color(glm::vec3 ambient_light_color);
 
@@ -76,11 +76,11 @@ private:
     unsigned int normal_matrix_location;
 
     // Light source
-    glm::vec3 light_position;
+    glm::vec3 light_direction;
     glm::vec3 ambient_light_color;
     glm::vec3 diffuse_light_color;
     glm::vec3 specular_light_color;
-    unsigned int light_position_location;
+    unsigned int light_direction_location;
     unsigned int ambient_light_color_location;
     unsigned int diffuse_light_color_location;
     unsigned int specular_light_color_location;

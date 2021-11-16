@@ -82,19 +82,19 @@ void Shader::set_normal_matrix(glm::mat3 normal_matrix) {
     this->normal_matrix_location = glGetUniformLocation(this->id, "normal_matrix");
 }
 
-void Shader::set_light(glm::vec3 light_position,
+void Shader::set_light(glm::vec3 light_direction,
                        glm::vec3 ambient_light_color,
                        glm::vec3 diffuse_light_color,
                        glm::vec3 specular_light_color) {
-    this->set_light_position(light_position);
+    this->set_light_direction(light_direction);
     this->set_ambient_light_color(ambient_light_color);
     this->set_diffuse_light_color(diffuse_light_color);
     this->set_specular_light_color(specular_light_color);
 }
 
-void Shader::set_light_position(glm::vec3 light_position) {
-    this->light_position = light_position;
-    this->light_position_location = glGetUniformLocation(this->id, "light_position");
+void Shader::set_light_direction(glm::vec3 light_direction) {
+    this->light_direction = light_direction;
+    this->light_direction_location = glGetUniformLocation(this->id, "light_direction");
 }
 
 void Shader::set_ambient_light_color(glm::vec3 ambient_light_color) {
@@ -157,7 +157,7 @@ void Shader::use() {
     glUniformMatrix3fv(this->normal_matrix_location, 1, GL_FALSE, glm::value_ptr(this->normal_matrix));
 
     // Set light
-    glUniform3fv(this->light_position_location, 1, glm::value_ptr(this->light_position));
+    glUniform3fv(this->light_direction_location, 1, glm::value_ptr(this->light_direction));
     glUniform3fv(this->ambient_light_color_location, 1, glm::value_ptr(this->ambient_light_color));
     glUniform3fv(this->diffuse_light_color_location, 1, glm::value_ptr(this->diffuse_light_color));
     glUniform3fv(this->specular_light_color_location, 1, glm::value_ptr(this->specular_light_color));
