@@ -18,9 +18,17 @@ public:
 
     const float *get_vertices() const;
 
+    float get_vertex(int index);
+
+    void set_vertex(int index, float value);
+
     unsigned int get_num_of_normals() const;
 
     const float *get_normals() const;
+
+    float get_normal(int index);
+
+    void set_normal(int index, float value);
 
 private:
     std::vector<float> vertices;

@@ -2,8 +2,11 @@
 #include "utils/sphere.h"
 #include "utils/surface.h"
 
+#include <cmath>
+
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+#define PI 3.1415926
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -42,7 +45,7 @@ int main() {
     Shader shader("shaders/vertex_shader.cpp", "shaders/fragment_shader.cpp");
 
     // Set transformations
-    glm::mat4 sphere_model(0.07f);
+    glm::mat4 sphere_model(0.05f);
     sphere_model = glm::translate(sphere_model, glm::vec3(0.0f, 1.5f, 0.0f));
     glm::mat3 surface_model(1.3f);
 
@@ -64,7 +67,7 @@ int main() {
 
     // Set light
     glm::vec3 light_direction(-3.0f, -2.0f, -1.0f);
-    glm::vec3 ambient_light_color(0.0f, 0.0f, 0.0f);
+    glm::vec3 ambient_light_color(0.05f, 0.05f, 0.05f);
     glm::vec3 diffuse_light_color(1.0f, 1.0f, 1.0f);
     glm::vec3 specular_light_color(1.0f, 1.0f, 1.0f);
     shader.set_light(light_direction, ambient_light_color, diffuse_light_color, specular_light_color);
@@ -74,7 +77,7 @@ int main() {
     glm::vec3 ambient_material_color(red / 255.0f, green / 255.0f, blue / 255.0f);
     glm::vec3 diffuse_material_color(red / 255.0f, green / 255.0f, blue / 255.0f);
     glm::vec3 specular_material_color(1.0f, 1.0f, 1.0f);
-    glm::float32 shininess(200.0f);
+    glm::float32 shininess(100.0f);
     shader.set_material(ambient_material_color, diffuse_material_color, specular_material_color, shininess);
 
     // Setup sphere
@@ -115,7 +118,8 @@ int main() {
 
     // Bind surface vertices
     glBindBuffer(GL_ARRAY_BUFFER, surface_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_vertices(), surface.get_vertices(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_vertices(), surface.get_vertices(),
+                 GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 
@@ -152,6 +156,35 @@ int main() {
         shader.set_normal_matrix(surface_normal_matrix);
         shader.use();
         glBindVertexArray(surface_vao);
+        for (int idx = 0; idx < surface.get_num_of_vertices(); idx += 3) {
+            float x = surface.get_vertex(idx);
+            float z = surface.get_vertex(idx + 2);
+            float distance = std::sqrt(std::pow(x, 2) + std::pow(z, 2));
+            float radian = 16 * (distance / std::sqrt(2) - current_frame / 7) * PI;
+            surface.set_vertex(idx + 1, 0.05 * std::sin(radian));
+
+            if (x == 0.0f && z == 0.0f)
+                continue;
+
+            glm::vec3 direction = glm::normalize(glm::vec3(x, 0.0f, z));
+            glm::vec3 up(0.0f, 1.0f, 0.0f);
+            glm::vec3 tangent = glm::normalize(glm::cross(direction, up));
+            glm::vec3 derivative = glm::normalize(
+                    glm::vec3(x,
+                              0.05 * std::cos(radian) * distance,
+                              z)
+                    );
+            glm::vec3 normal = glm::normalize(glm::cross(tangent, derivative));
+            surface.set_normal(idx, normal.x);
+            surface.set_normal(idx + 1, normal.y);
+            surface.set_normal(idx + 2, normal.z);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, surface_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_vertices(), surface.get_vertices(),
+                     GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, surface_nbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_normals(), surface.get_normals(),
+                     GL_DYNAMIC_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, surface.get_num_of_vertices());
 
         // Display result buffer

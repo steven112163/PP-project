@@ -12,12 +12,28 @@ const float *Surface::get_vertices() const {
     return this->vertices.data();
 }
 
+float Surface::get_vertex(int index) {
+    return this->vertices[index];
+}
+
+void Surface::set_vertex(int index, float value) {
+    this->vertices[index] = value;
+}
+
 unsigned int Surface::get_num_of_normals() const {
     return this->normals.size();
 }
 
 const float *Surface::get_normals() const {
     return this->normals.data();
+}
+
+float Surface::get_normal(int index) {
+    return this->normals[index];
+}
+
+void Surface::set_normal(int index, float value) {
+    this->normals[index] = value;
 }
 
 void Surface::surface_from_subdivision(int num_of_subdivision) {
