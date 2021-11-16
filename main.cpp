@@ -1,5 +1,6 @@
 #include "utils/shader.h"
 #include "utils/sphere.h"
+#include "utils/surface.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -41,21 +42,28 @@ int main() {
     Shader shader("shaders/vertex_shader.cpp", "shaders/fragment_shader.cpp");
 
     // Set transformations
-    glm::mat4 model(1.0f);
-    glm::vec3 camera_position(0.0f, 0.0f, 3.0f);
+    glm::mat4 sphere_model(0.07f);
+    sphere_model = glm::translate(sphere_model, glm::vec3(0.0f, 1.5f, 0.0f));
+    glm::mat3 surface_model(1.3f);
+
+    glm::vec3 camera_position(2.0f, 3.0f, 4.0f);
     glm::mat4 view = glm::lookAt(camera_position,
                                  glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(0.0f, 1.0f, 0.0f));
+
     glm::mat4 projection = glm::perspective(glm::radians(45.0f),
                                             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT,
                                             0.1f,
                                             100.0f);
-    glm::mat3 normal_matrix = glm::mat3(glm::transpose(glm::inverse(model)));
-    shader.set_transformations(model, view, projection, normal_matrix);
+
+    glm::mat3 sphere_normal_matrix = glm::mat3(glm::transpose(glm::inverse(sphere_model)));
+    glm::mat3 surface_normal_matrix = glm::mat3(glm::transpose(glm::inverse(surface_model)));
+
+    shader.set_transformations(sphere_model, view, projection, sphere_normal_matrix);
     shader.set_camera_position(camera_position);
 
     // Set light
-    glm::vec3 light_direction(1.0f, -1.0f, -1.0f);
+    glm::vec3 light_direction(-3.0f, -2.0f, -1.0f);
     glm::vec3 ambient_light_color(0.0f, 0.0f, 0.0f);
     glm::vec3 diffuse_light_color(1.0f, 1.0f, 1.0f);
     glm::vec3 specular_light_color(1.0f, 1.0f, 1.0f);
@@ -72,30 +80,50 @@ int main() {
     // Setup sphere
     Sphere sphere(6);
 
-    // Generate vertex buffer, normal buffer and vertex attribute
-    unsigned int vertex_buffer_object, normal_buffer_object, vertex_attribute_object;
-    glGenVertexArrays(1, &vertex_attribute_object);
-    glGenBuffers(1, &vertex_buffer_object);
-    glGenBuffers(1, &normal_buffer_object);
+    // Generate vertex buffer, normal buffer and vertex attribute for sphere
+    unsigned int sphere_vbo, sphere_nbo, sphere_vao;
+    glGenVertexArrays(1, &sphere_vao);
+    glGenBuffers(1, &sphere_vbo);
+    glGenBuffers(1, &sphere_nbo);
 
-    // Bind attributes
-    glBindVertexArray(vertex_attribute_object);
+    // Bind sphere attributes
+    glBindVertexArray(sphere_vao);
 
-    // Bind vertices
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sphere.get_num_of_vertices(), sphere.get_vertices(), GL_STATIC_DRAW);
+    // Bind sphere vertices
+    glBindBuffer(GL_ARRAY_BUFFER, sphere_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sphere.get_num_of_vertices(), sphere.get_vertices(), GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 
-    // Bind normals
-    glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sphere.get_num_of_normals(), sphere.get_normals(), GL_STATIC_DRAW);
+    // Bind sphere normals
+    glBindBuffer(GL_ARRAY_BUFFER, sphere_nbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sphere.get_num_of_normals(), sphere.get_normals(), GL_DYNAMIC_DRAW);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(1);
 
-    // Unbind buffer and vertex attribute
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    // Setup surface
+    Surface surface(6);
+
+    // Generate vertex buffer, normal buffer and vertex attribute for surface
+    unsigned int surface_vbo, surface_nbo, surface_vao;
+    glGenVertexArrays(1, &surface_vao);
+    glGenBuffers(1, &surface_vbo);
+    glGenBuffers(1, &surface_nbo);
+
+    // Bind surface attributes
+    glBindVertexArray(surface_vao);
+
+    // Bind surface vertices
+    glBindBuffer(GL_ARRAY_BUFFER, surface_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_vertices(), surface.get_vertices(), GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(0);
+
+    // Bind surface normals
+    glBindBuffer(GL_ARRAY_BUFFER, surface_nbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_normals(), surface.get_normals(), GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(1);
 
     // Timing
     float delta_time = 0.0f;
@@ -112,10 +140,19 @@ int main() {
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Draw
+        // Draw sphere
+        shader.set_model(sphere_model);
+        shader.set_normal_matrix(sphere_normal_matrix);
         shader.use();
-        glBindVertexArray(vertex_attribute_object);
+        glBindVertexArray(sphere_vao);
         glDrawArrays(GL_TRIANGLES, 0, sphere.get_num_of_vertices());
+
+        // Draw surface
+        shader.set_model(surface_model);
+        shader.set_normal_matrix(surface_normal_matrix);
+        shader.use();
+        glBindVertexArray(surface_vao);
+        glDrawArrays(GL_TRIANGLES, 0, surface.get_num_of_vertices());
 
         // Display result buffer
         glfwSwapBuffers(window);
@@ -123,8 +160,12 @@ int main() {
     }
 
     // De-allocate all resources
-    glDeleteVertexArrays(1, &vertex_attribute_object);
-    glDeleteBuffers(1, &vertex_buffer_object);
+    glDeleteVertexArrays(1, &sphere_vao);
+    glDeleteBuffers(1, &sphere_vbo);
+    glDeleteBuffers(1, &sphere_nbo);
+    glDeleteVertexArrays(1, &surface_vao);
+    glDeleteBuffers(1, &surface_vbo);
+    glDeleteBuffers(1, &surface_nbo);
     shader.destroy();
 
     // Terminate process
