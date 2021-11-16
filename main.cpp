@@ -12,6 +12,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     // Create window
     GLFWwindow *window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Ripple Simulation", NULL, NULL);
@@ -32,6 +33,9 @@ int main() {
 
     // Enable depth check
     glEnable(GL_DEPTH_TEST);
+
+    // Enable multisampling
+    glEnable(GL_MULTISAMPLE);
 
     // Construct shader
     Shader shader("shaders/vertex_shader.cpp", "shaders/fragment_shader.cpp");
@@ -62,7 +66,7 @@ int main() {
     glm::vec3 ambient_material_color(red / 255.0f, green / 255.0f, blue / 255.0f);
     glm::vec3 diffuse_material_color(red / 255.0f, green / 255.0f, blue / 255.0f);
     glm::vec3 specular_material_color(1.0f, 1.0f, 1.0f);
-    glm::float32 shininess(100.0f);
+    glm::float32 shininess(200.0f);
     shader.set_material(ambient_material_color, diffuse_material_color, specular_material_color, shininess);
 
     // Setup sphere

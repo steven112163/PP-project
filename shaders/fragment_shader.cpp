@@ -24,15 +24,19 @@ void main() {
     // Calculate n dot l for diffuse lighting
     float diffuse_light_weighing = max(dot(normal_in_global, vector_to_light_source), 0.0f);
 
-    // Calculate the reflection vector (r) that is needed for specular light
-    vec3 reflection_vector = normalize(reflect(-vector_to_light_source, normal_in_global));
-
     // Calculate view_vector (v) that is needed for specular light
     vec3 view_vector = normalize(camera_position - position_in_global);
 
-    float r_dot_v = max(dot(reflection_vector, view_vector), 0.0f);
+    // Phong
+    // Calculate the reflection vector (r) that is needed for specular light
+    // vec3 reflection_vector = normalize(reflect(-vector_to_light_source, normal_in_global));
+    // float r_dot_v = max(dot(reflection_vector, view_vector), 0.0f);
+    // float specular_light_weighing = pow(r_dot_v, shininess);
 
-    float specular_light_weighing = pow(r_dot_v, shininess);
+    // Blinn-Phong
+    vec3 halfway_vector = normalize(vector_to_light_source + view_vector);
+    float n_dot_h = max(dot(normal_in_global, halfway_vector), 0.0f);
+    float specular_light_weighing = pow(n_dot_h, shininess);
 
     // Sum up all three reflection components and send to the fragment shader
     FragColor = vec4(((ambient_light_color * ambient_material_color)
