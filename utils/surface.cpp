@@ -1,42 +1,10 @@
 #include "surface.h"
 
 Surface::Surface(int num_of_subdivision) {
-    this->surface_from_subdivision(num_of_subdivision);
+    this->from_subdivision(num_of_subdivision);
 }
 
-unsigned int Surface::get_num_of_vertices() const {
-    return this->vertices.size();
-}
-
-const float *Surface::get_vertices() const {
-    return this->vertices.data();
-}
-
-float Surface::get_vertex(int index) {
-    return this->vertices[index];
-}
-
-void Surface::set_vertex(int index, float value) {
-    this->vertices[index] = value;
-}
-
-unsigned int Surface::get_num_of_normals() const {
-    return this->normals.size();
-}
-
-const float *Surface::get_normals() const {
-    return this->normals.data();
-}
-
-float Surface::get_normal(int index) {
-    return this->normals[index];
-}
-
-void Surface::set_normal(int index, float value) {
-    this->normals[index] = value;
-}
-
-void Surface::surface_from_subdivision(int num_of_subdivision) {
+void Surface::from_subdivision(int num_of_subdivision) {
     glm::vec3 a(-1.0f, 0.0f, -1.0f);
     glm::vec3 b(-1.0f, 0.0f, 1.0f);
     glm::vec3 c(1.0f, 0.0f, 1.0f);
@@ -70,16 +38,4 @@ void Surface::divide_triangle(glm::vec3 &a, glm::vec3 &b, glm::vec3 &c, int num_
         this->push_normal(normal);
         this->push_normal(normal);
     }
-}
-
-void Surface::push_vertex(glm::vec3 &vertex) {
-    this->vertices.push_back(vertex.x);
-    this->vertices.push_back(vertex.y);
-    this->vertices.push_back(vertex.z);
-}
-
-void Surface::push_normal(glm::vec3 &normal) {
-    this->normals.push_back(normal.x);
-    this->normals.push_back(normal.y);
-    this->normals.push_back(normal.z);
 }
