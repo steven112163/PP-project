@@ -56,7 +56,7 @@ void deallocate_and_terminate(Shader *shader,
     glDeleteVertexArrays(1, &surface_vao);
     glDeleteBuffers(1, &surface_vbo);
     glDeleteBuffers(1, &surface_nbo);
-    shader.destroy();
+    shader->destroy();
 
     // Terminate process
     glfwTerminate();

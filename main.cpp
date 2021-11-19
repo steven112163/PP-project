@@ -8,6 +8,9 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 #define PI 3.1415926
+#define AIR_DENSITY 1.29
+#define DRAG_COEFFICIENT 0.47
+#define ACCELERATION -9.8
 
 
 int main() {
@@ -44,10 +47,14 @@ int main() {
     // Construct shader
     Shader shader("shaders/vertex_shader.cpp", "shaders/fragment_shader.cpp");
 
+    // Set translation, scalar, and velocity
+    float translation = 1.5f;
+    float scalar = 0.2f;
+    float velocity = 0.0f;
+
     // Set transformations
-    glm::vec3 translation(0.0f, 1.5f, 0.0f);
-    glm::mat4 sphere_model = glm::translate(glm::mat4(1.0f), translation);
-    sphere_model = glm::scale(sphere_model, glm::vec3(0.2f, 0.2f, 0.2f));
+    glm::mat4 sphere_model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translation, 0.0f));
+    sphere_model = glm::scale(sphere_model, glm::vec3(scalar));
 
     glm::mat4 surface_model = glm::scale(glm::mat4(1.0f), glm::vec3(1.3f, 1.3f, 1.3f));
 
@@ -111,6 +118,20 @@ int main() {
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Calculate sphere's location
+        if (current_frame > 2 && translation > -0.3) {
+            // Calculate new translation
+            float drag = 0.5 * AIR_DENSITY * std::pow(velocity, 2) * DRAG_COEFFICIENT * PI * std::pow(scalar, 2);
+            float current_velocity = velocity + drag * delta_time + ACCELERATION * delta_time;
+            translation += (current_velocity + velocity) / 2.0f * delta_time;
+
+            // Get new transformation
+            sphere_model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translation, 0.0f));
+            sphere_model = glm::scale(sphere_model, glm::vec3(scalar));
+
+            velocity = current_velocity;
+        }
+
         // Draw sphere
         shader.set_model(sphere_model);
         shader.set_normal_matrix(sphere_normal_matrix);
@@ -156,7 +177,7 @@ int main() {
     }
 
     // Deallocate and terminate
-    deallocate_and_terminate(*shader, sphere_vao, sphere_vbo, sphere_nbo, surface_vao, surface_vbo, surface_nbo);
+    deallocate_and_terminate(&shader, sphere_vao, sphere_vbo, sphere_nbo, surface_vao, surface_vbo, surface_nbo);
 
     return 0;
 }
