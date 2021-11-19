@@ -2,6 +2,7 @@
 #include "utils/shader.h"
 #include "utils/sphere.h"
 #include "utils/surface.h"
+#include "utils/ripple.h"
 
 #include <cmath>
 
@@ -106,6 +107,7 @@ int main() {
     // Timing
     float delta_time = 0.0f;
     float last_frame = 0.0f;
+    float reached_time = 0.0f;
 
     // Start rendering
     while (!glfwWindowShouldClose(window)) {
@@ -124,6 +126,10 @@ int main() {
             float drag = 0.5 * AIR_DENSITY * std::pow(velocity, 2) * DRAG_COEFFICIENT * PI * std::pow(scalar, 2);
             float current_velocity = velocity + drag * delta_time + ACCELERATION * delta_time;
             translation += (current_velocity + velocity) / 2.0f * delta_time;
+
+            // Check if the sphere reaches the surface
+            if (translation <= 0.0f)
+                reached_time = current_frame;
 
             // Get new transformation
             sphere_model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translation, 0.0f));
@@ -144,31 +150,11 @@ int main() {
         shader.set_normal_matrix(surface_normal_matrix);
         shader.use();
         glBindVertexArray(surface_vao);
-        for (int idx = 0; idx < surface.get_num_of_vertices(); idx += 3) {
-            float x = surface.get_vertex(idx);
-            float z = surface.get_vertex(idx + 2);
-            float distance = std::sqrt(std::pow(x, 2) + std::pow(z, 2));
-            float radian = 16 * (distance / std::sqrt(2) - current_frame / 7) * PI;
-            surface.set_vertex(idx + 1, 0.05 * std::sin(radian));
-
-            if (x == 0.0f && z == 0.0f)
-                continue;
-
-            glm::vec3 direction = glm::normalize(glm::vec3(x, 0.0f, z));
-            glm::vec3 up(0.0f, 1.0f, 0.0f);
-            glm::vec3 tangent = glm::normalize(glm::cross(direction, up));
-            glm::vec3 derivative = glm::normalize(
-                    glm::vec3(x,
-                              0.05 * std::cos(radian) * distance,
-                              z)
-            );
-            glm::vec3 normal = glm::normalize(glm::cross(tangent, derivative));
-            surface.set_normal(idx, normal.x);
-            surface.set_normal(idx + 1, normal.y);
-            surface.set_normal(idx + 2, normal.z);
+        if (reached_time != 0.0f) {
+            ripple_serial(&surface, current_frame);
+            bind_vertices(&surface, surface_vbo);
+            bind_normals(&surface, surface_nbo);
         }
-        bind_vertices(&surface, surface_vbo);
-        bind_normals(&surface, surface_nbo);
         glDrawArrays(GL_TRIANGLES, 0, surface.get_num_of_vertices());
 
         // Display result buffer
