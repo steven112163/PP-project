@@ -1,3 +1,4 @@
+#include "utils/util.h"
 #include "utils/shader.h"
 #include "utils/sphere.h"
 #include "utils/surface.h"
@@ -8,7 +9,6 @@
 #define WINDOW_HEIGHT 600
 #define PI 3.1415926
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 int main() {
     // Initialize GLFW
@@ -45,9 +45,11 @@ int main() {
     Shader shader("shaders/vertex_shader.cpp", "shaders/fragment_shader.cpp");
 
     // Set transformations
-    glm::mat4 sphere_model(0.05f);
-    sphere_model = glm::translate(sphere_model, glm::vec3(0.0f, 1.5f, 0.0f));
-    glm::mat3 surface_model(1.3f);
+    glm::vec3 translation(0.0f, 1.5f, 0.0f);
+    glm::mat4 sphere_model = glm::translate(glm::mat4(1.0f), translation);
+    sphere_model = glm::scale(sphere_model, glm::vec3(0.2f, 0.2f, 0.2f));
+
+    glm::mat4 surface_model = glm::scale(glm::mat4(1.0f), glm::vec3(1.3f, 1.3f, 1.3f));
 
     glm::vec3 camera_position(2.0f, 3.0f, 4.0f);
     glm::mat4 view = glm::lookAt(camera_position,
@@ -83,51 +85,16 @@ int main() {
     // Setup sphere
     Sphere sphere(6);
 
-    // Generate vertex buffer, normal buffer and vertex attribute for sphere
+    // Bind vertex buffer, normal buffer and vertex attribute for sphere
     unsigned int sphere_vbo, sphere_nbo, sphere_vao;
-    glGenVertexArrays(1, &sphere_vao);
-    glGenBuffers(1, &sphere_vbo);
-    glGenBuffers(1, &sphere_nbo);
-
-    // Bind sphere attributes
-    glBindVertexArray(sphere_vao);
-
-    // Bind sphere vertices
-    glBindBuffer(GL_ARRAY_BUFFER, sphere_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sphere.get_num_of_vertices(), sphere.get_vertices(), GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-    glEnableVertexAttribArray(0);
-
-    // Bind sphere normals
-    glBindBuffer(GL_ARRAY_BUFFER, sphere_nbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sphere.get_num_of_normals(), sphere.get_normals(), GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-    glEnableVertexAttribArray(1);
+    bind_attribute_and_buffers(&sphere, sphere_vao, sphere_vbo, sphere_nbo);
 
     // Setup surface
     Surface surface(6);
 
-    // Generate vertex buffer, normal buffer and vertex attribute for surface
+    // Bind vertex buffer, normal buffer and vertex attribute for surface
     unsigned int surface_vbo, surface_nbo, surface_vao;
-    glGenVertexArrays(1, &surface_vao);
-    glGenBuffers(1, &surface_vbo);
-    glGenBuffers(1, &surface_nbo);
-
-    // Bind surface attributes
-    glBindVertexArray(surface_vao);
-
-    // Bind surface vertices
-    glBindBuffer(GL_ARRAY_BUFFER, surface_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_vertices(), surface.get_vertices(),
-                 GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-    glEnableVertexAttribArray(0);
-
-    // Bind surface normals
-    glBindBuffer(GL_ARRAY_BUFFER, surface_nbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_normals(), surface.get_normals(), GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-    glEnableVertexAttribArray(1);
+    bind_attribute_and_buffers(&surface, surface_vao, surface_vbo, surface_nbo);
 
     // Timing
     float delta_time = 0.0f;
@@ -173,18 +140,14 @@ int main() {
                     glm::vec3(x,
                               0.05 * std::cos(radian) * distance,
                               z)
-                    );
+            );
             glm::vec3 normal = glm::normalize(glm::cross(tangent, derivative));
             surface.set_normal(idx, normal.x);
             surface.set_normal(idx + 1, normal.y);
             surface.set_normal(idx + 2, normal.z);
         }
-        glBindBuffer(GL_ARRAY_BUFFER, surface_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_vertices(), surface.get_vertices(),
-                     GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, surface_nbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * surface.get_num_of_normals(), surface.get_normals(),
-                     GL_DYNAMIC_DRAW);
+        bind_vertices(&surface, surface_vbo);
+        bind_normals(&surface, surface_nbo);
         glDrawArrays(GL_TRIANGLES, 0, surface.get_num_of_vertices());
 
         // Display result buffer
@@ -192,20 +155,8 @@ int main() {
         glfwPollEvents();
     }
 
-    // De-allocate all resources
-    glDeleteVertexArrays(1, &sphere_vao);
-    glDeleteBuffers(1, &sphere_vbo);
-    glDeleteBuffers(1, &sphere_nbo);
-    glDeleteVertexArrays(1, &surface_vao);
-    glDeleteBuffers(1, &surface_vbo);
-    glDeleteBuffers(1, &surface_nbo);
-    shader.destroy();
+    // Deallocate and terminate
+    deallocate_and_terminate(*shader, sphere_vao, sphere_vbo, sphere_nbo, surface_vao, surface_vbo, surface_nbo);
 
-    // Terminate process
-    glfwTerminate();
     return 0;
-}
-
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    glViewport(0, 0, width, height);
 }
