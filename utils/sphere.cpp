@@ -1,4 +1,4 @@
-#include "sphere.h"
+#include "../include/sphere.h"
 
 Sphere::Sphere(int num_of_subdivision) {
     this->from_subdivision(num_of_subdivision);

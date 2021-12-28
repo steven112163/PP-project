@@ -1,4 +1,4 @@
-#include "ripple.h"
+#include "../include/ripple.h"
 
 void ripple_serial(Object *object, float &current_frame) {
     for (int idx = 0; idx < object->get_num_of_vertices(); idx += 3) {

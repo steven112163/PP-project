@@ -1,4 +1,4 @@
-#include "surface.h"
+#include "../include/surface.h"
 
 Surface::Surface(int num_of_subdivision) {
     this->from_subdivision(num_of_subdivision);

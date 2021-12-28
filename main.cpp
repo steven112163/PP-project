@@ -1,8 +1,8 @@
-#include "utils/util.h"
-#include "utils/shader.h"
-#include "utils/sphere.h"
-#include "utils/surface.h"
-#include "utils/ripple.h"
+#include "include/util.h"
+#include "include/shader.h"
+#include "include/sphere.h"
+#include "include/surface.h"
+#include "include/ripple.h"
 
 #include <cmath>
 
