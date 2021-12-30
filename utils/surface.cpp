@@ -1,41 +1,66 @@
 #include "../include/surface.h"
 
-Surface::Surface(int num_of_subdivision) {
-    this->from_subdivision(num_of_subdivision);
+Surface::Surface(int surface_size) {
+    this->state = 0;
+
+    // For state = 0
+    this->vertices.push_back(std::vector<float>());
+    // For state = 1
+    this->vertices.push_back(std::vector<float>());
+
+    this->setup_surface(surface_size);
 }
 
-void Surface::from_subdivision(int num_of_subdivision) {
-    glm::vec3 a(-1.0f, 0.0f, -1.0f);
-    glm::vec3 b(-1.0f, 0.0f, 1.0f);
-    glm::vec3 c(1.0f, 0.0f, 1.0f);
-    glm::vec3 d(1.0f, 0.0f, -1.0f);
-
-    this->divide_triangle(a, b, c, num_of_subdivision);
-    this->divide_triangle(a, c, d, num_of_subdivision);
+unsigned int Surface::get_num_of_vertices() const {
+    return this->vertices[this->state].size();
 }
 
-void Surface::divide_triangle(glm::vec3 &a, glm::vec3 &b, glm::vec3 &c, int num_of_subdivision) {
-    if (num_of_subdivision > 0) {
-        glm::vec3 ab = glm::mix(a, b, 0.5f);
+const float *Surface::get_vertices() const {
+    return this->vertices[this->state].data();
+}
 
-        glm::vec3 ac = glm::mix(a, c, 0.5f);
+float Surface::get_vertex(int index) {
+    return this->vertices[this->state][index];
+}
 
-        glm::vec3 bc = glm::mix(b, c, 0.5f);
+void Surface::set_vertex(int index, float value) {
+    this->vertices[this->state][index] = value;
+}
 
-        this->divide_triangle(a, ab, ac, num_of_subdivision - 1);
-        this->divide_triangle(ab, b, bc, num_of_subdivision - 1);
-        this->divide_triangle(bc, c, ac, num_of_subdivision - 1);
-        this->divide_triangle(ab, bc, ac, num_of_subdivision - 1);
-    } else {
-        // Add 3 vertices to the array
-        this->push_vertex(a);
-        this->push_vertex(b);
-        this->push_vertex(c);
+void Surface::flip_state() {
+    this->state = 1 - this->state;
+}
 
-        // Normals are the same
-        glm::vec3 normal(0.0f, 1.0f, 0.0f);
-        this->push_normal(normal);
-        this->push_normal(normal);
-        this->push_normal(normal);
+void Surface::push_vertex(glm::vec3 &vertex) {
+    this->vertices[0].push_back(vertex.x);
+    this->vertices[0].push_back(vertex.y);
+    this->vertices[0].push_back(vertex.z);
+    this->vertices[1].push_back(vertex.x);
+    this->vertices[1].push_back(vertex.y);
+    this->vertices[1].push_back(vertex.z);
+}
+
+void Surface::setup_surface(int surface_size) {
+    float step = 2.0f / (surface_size - 1);
+    glm::vec3 vertex(0.0f, 0.0f, 0.0f), normal(0.0f, 1.0f, 0.0f);
+    for (int row = 0; row < surface_size; row++) {
+        vertex.z = -1 + row * step;
+        for (int col = 0; col < surface_size; col++) {
+            vertex.x = -1 + col * step;
+            this->push_vertex(vertex);
+            this->push_normal(normal);
+        }
     }
+
+    for (int row = 0; row < surface_size - 1; row++)
+        for (int col = 0; col < surface_size - 1; col++)
+            this->push_index(row * surface_size + col,
+                             (row + 1) * surface_size + col,
+                             row * surface_size + col + 1);
+
+    for (int row = 1; row < surface_size; row++)
+        for (int col = 0; col < surface_size - 1; col++)
+            this->push_index(row * surface_size + col,
+                             row * surface_size + col + 1,
+                             (row - 1) * surface_size + col + 1);
 }

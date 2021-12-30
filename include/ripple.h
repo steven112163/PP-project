@@ -1,4 +1,4 @@
-#include "object.h"
+#include "surface.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -11,4 +11,4 @@
 
 #define PI 3.1415926
 
-void ripple_serial(Object *object, float &current_frame);
+void ripple_serial(Surface *surface, float &current_frame);

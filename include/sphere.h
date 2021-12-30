@@ -16,7 +16,19 @@ class Sphere : public Object {
 public:
     Sphere(int num_of_subdivision = 6);
 
+    unsigned int get_num_of_vertices() const;
+
+    const float *get_vertices() const;
+
+    float get_vertex(int index);
+
+    void set_vertex(int index, float value);
+
 protected:
+    std::vector<float> vertices;
+
+    void push_vertex(glm::vec3 &vertex);
+
     void from_subdivision(int num_of_subdivision);
 
     void divide_triangle(glm::vec3 &a, glm::vec3 &b, glm::vec3 &c, int num_of_subdivision);

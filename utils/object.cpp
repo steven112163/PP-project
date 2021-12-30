@@ -2,20 +2,12 @@
 
 Object::Object() {}
 
-unsigned int Object::get_num_of_vertices() const {
-    return this->vertices.size();
+unsigned int Object::get_num_of_indices() const {
+    return this->indices.size();
 }
 
-const float *Object::get_vertices() const {
-    return this->vertices.data();
-}
-
-float Object::get_vertex(int index) {
-    return this->vertices[index];
-}
-
-void Object::set_vertex(int index, float value) {
-    this->vertices[index] = value;
+const int *Object::get_indices() const {
+    return this->indices.data();
 }
 
 unsigned int Object::get_num_of_normals() const {
@@ -34,14 +26,10 @@ void Object::set_normal(int index, float value) {
     this->normals[index] = value;
 }
 
-void Object::from_subdivision(int num_of_subdivision) {}
-
-void Object::divide_triangle(glm::vec3 &a, glm::vec3 &b, glm::vec3 &c, int num_of_subdivision) {}
-
-void Object::push_vertex(glm::vec3 &vertex) {
-    this->vertices.push_back(vertex.x);
-    this->vertices.push_back(vertex.y);
-    this->vertices.push_back(vertex.z);
+void Object::push_index(int a, int b, int c) {
+    this->indices.push_back(a);
+    this->indices.push_back(b);
+    this->indices.push_back(c);
 }
 
 void Object::push_normal(glm::vec3 &normal) {

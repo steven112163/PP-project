@@ -14,12 +14,25 @@
 
 class Surface : public Object {
 public:
-    Surface(int num_of_subdivision = 6);
+    Surface(int surface_size = 200);
+
+    unsigned int get_num_of_vertices() const;
+
+    const float *get_vertices() const;
+
+    float get_vertex(int index);
+
+    void set_vertex(int index, float value);
+
+    void flip_state();
 
 protected:
-    void from_subdivision(int num_of_subdivision);
+    int state;
+    std::vector <std::vector<float>> vertices;
 
-    void divide_triangle(glm::vec3 &a, glm::vec3 &b, glm::vec3 &c, int num_of_subdivision);
+    void push_vertex(glm::vec3 &vertex);
+
+    void setup_surface(int surface_size);
 };
 
 #endif

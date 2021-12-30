@@ -4,6 +4,28 @@ Sphere::Sphere(int num_of_subdivision) {
     this->from_subdivision(num_of_subdivision);
 }
 
+unsigned int Sphere::get_num_of_vertices() const {
+    return this->vertices.size();
+}
+
+const float *Sphere::get_vertices() const {
+    return this->vertices.data();
+}
+
+float Sphere::get_vertex(int index) {
+    return this->vertices[index];
+}
+
+void Sphere::set_vertex(int index, float value) {
+    this->vertices[index] = value;
+}
+
+void Sphere::push_vertex(glm::vec3 &vertex) {
+    this->vertices.push_back(vertex.x);
+    this->vertices.push_back(vertex.y);
+    this->vertices.push_back(vertex.z);
+}
+
 void Sphere::from_subdivision(int num_of_subdivision) {
     glm::vec3 a(0.0f, 0.0f, -1.0f);
     glm::vec3 b(0.0f, 0.942809f, 0.333333f);

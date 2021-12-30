@@ -95,14 +95,14 @@ int main() {
 
     // Bind vertex buffer, normal buffer and vertex attribute for sphere
     unsigned int sphere_vbo, sphere_nbo, sphere_vao;
-    bind_attribute_and_buffers(&sphere, sphere_vao, sphere_vbo, sphere_nbo);
+    bind_sphere(&sphere, sphere_vao, sphere_vbo, sphere_nbo);
 
     // Setup surface
-    Surface surface(6);
+    Surface surface(1000);
 
-    // Bind vertex buffer, normal buffer and vertex attribute for surface
-    unsigned int surface_vbo, surface_nbo, surface_vao;
-    bind_attribute_and_buffers(&surface, surface_vao, surface_vbo, surface_nbo);
+    // Bind vertex buffer, element buffer, normal buffer and vertex attribute for surface
+    unsigned int surface_vbo, surface_ebo, surface_nbo, surface_vao;
+    bind_surface(&surface, surface_vao, surface_vbo, surface_ebo, surface_nbo);
 
     // Timing
     float delta_time = 0.0f;
@@ -110,6 +110,7 @@ int main() {
     float reached_time = 0.0f;
 
     // Start rendering
+    int state = 0;
     while (!glfwWindowShouldClose(window)) {
         // Get delta time
         float current_frame = glfwGetTime();
@@ -155,7 +156,7 @@ int main() {
             bind_vertices(&surface, surface_vbo);
             bind_normals(&surface, surface_nbo);
         }
-        glDrawArrays(GL_TRIANGLES, 0, surface.get_num_of_vertices());
+        glDrawElements(GL_TRIANGLES, surface.get_num_of_indices(), GL_UNSIGNED_INT, 0);
 
         // Display result buffer
         glfwSwapBuffers(window);
@@ -163,7 +164,9 @@ int main() {
     }
 
     // Deallocate and terminate
-    deallocate_and_terminate(&shader, sphere_vao, sphere_vbo, sphere_nbo, surface_vao, surface_vbo, surface_nbo);
+    deallocate_and_terminate(&shader,
+                             sphere_vao, sphere_vbo, sphere_nbo,
+                             surface_vao, surface_vbo, surface_ebo, surface_nbo);
 
     return 0;
 }
