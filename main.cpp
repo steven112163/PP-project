@@ -12,6 +12,7 @@
 #define AIR_DENSITY 1.29
 #define DRAG_COEFFICIENT 0.47
 #define ACCELERATION -9.8
+#define SURFACE_SIZE 200
 
 
 int main() {
@@ -98,7 +99,7 @@ int main() {
     bind_sphere(&sphere, sphere_vao, sphere_vbo, sphere_nbo);
 
     // Setup surface
-    Surface surface(1000);
+    Surface surface(SURFACE_SIZE);
 
     // Bind vertex buffer, element buffer, normal buffer and vertex attribute for surface
     unsigned int surface_vbo, surface_ebo, surface_nbo, surface_vao;
@@ -110,7 +111,7 @@ int main() {
     float reached_time = 0.0f;
 
     // Start rendering
-    int state = 0;
+    int water_state = 0;
     while (!glfwWindowShouldClose(window)) {
         // Get delta time
         float current_frame = glfwGetTime();
@@ -129,8 +130,12 @@ int main() {
             translation += (current_velocity + velocity) / 2.0f * delta_time;
 
             // Check if the sphere reaches the surface
-            if (translation <= 0.0f)
+            if (translation <= 0.0f && reached_time == 0.0f) {
                 reached_time = current_frame;
+                surface.set_vertex(3 * SURFACE_SIZE * (int) (SURFACE_SIZE / 2) + 3 * (int) (SURFACE_SIZE / 2) + 1,
+                                   -0.5f,
+                                   1 - water_state);
+            }
 
             // Get new transformation
             sphere_model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translation, 0.0f));
@@ -152,8 +157,8 @@ int main() {
         shader.use();
         glBindVertexArray(surface_vao);
         if (reached_time != 0.0f) {
-            ripple_serial(&surface, current_frame);
-            bind_vertices(&surface, surface_vbo);
+            ripple_serial(&surface, water_state);
+            bind_vertices(&surface, surface_vbo, water_state);
             bind_normals(&surface, surface_nbo);
         }
         glDrawElements(GL_TRIANGLES, surface.get_num_of_indices(), GL_UNSIGNED_INT, 0);

@@ -14,13 +14,13 @@ class Object {
 public:
     Object();
 
-    virtual unsigned int get_num_of_vertices() const = 0;
+    virtual unsigned int get_num_of_vertices(int state = 0) const = 0;
 
-    virtual const float *get_vertices() const = 0;
+    virtual const float *get_vertices(int state = 0) const = 0;
 
-    virtual float get_vertex(int index) = 0;
+    virtual float get_vertex(int index, int state = 0) = 0;
 
-    virtual void set_vertex(int index, float value) = 0;
+    virtual void set_vertex(int index, float value, int state = 0) = 0;
 
     unsigned int get_num_of_indices() const;
 

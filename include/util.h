@@ -18,7 +18,7 @@ void bind_surface(Surface *surface,
                   unsigned int &element_buffer_object,
                   unsigned int &normal_buffer_object);
 
-void bind_vertices(Object *object, unsigned int &vertex_buffer_object);
+void bind_vertices(Object *object, unsigned int &vertex_buffer_object, int state = 0);
 
 void bind_indices(Object *object, unsigned int &element_buffer_object);
 

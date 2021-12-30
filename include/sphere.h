@@ -16,13 +16,13 @@ class Sphere : public Object {
 public:
     Sphere(int num_of_subdivision = 6);
 
-    unsigned int get_num_of_vertices() const;
+    unsigned int get_num_of_vertices(int state = 0) const;
 
-    const float *get_vertices() const;
+    const float *get_vertices(int state = 0) const;
 
-    float get_vertex(int index);
+    float get_vertex(int index, int state = 0);
 
-    void set_vertex(int index, float value);
+    void set_vertex(int index, float value, int state = 0);
 
 protected:
     std::vector<float> vertices;

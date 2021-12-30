@@ -4,19 +4,19 @@ Sphere::Sphere(int num_of_subdivision) {
     this->from_subdivision(num_of_subdivision);
 }
 
-unsigned int Sphere::get_num_of_vertices() const {
+unsigned int Sphere::get_num_of_vertices(int state) const {
     return this->vertices.size();
 }
 
-const float *Sphere::get_vertices() const {
+const float *Sphere::get_vertices(int state) const {
     return this->vertices.data();
 }
 
-float Sphere::get_vertex(int index) {
+float Sphere::get_vertex(int index, int state) {
     return this->vertices[index];
 }
 
-void Sphere::set_vertex(int index, float value) {
+void Sphere::set_vertex(int index, float value, int state) {
     this->vertices[index] = value;
 }
 

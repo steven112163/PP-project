@@ -16,23 +16,23 @@ class Surface : public Object {
 public:
     Surface(int surface_size = 200);
 
-    unsigned int get_num_of_vertices() const;
+    unsigned int get_num_of_vertices(int state = 0) const;
 
-    const float *get_vertices() const;
+    const float *get_vertices(int state = 0) const;
 
-    float get_vertex(int index);
+    float get_vertex(int index, int state = 0);
 
-    void set_vertex(int index, float value);
+    void set_vertex(int index, float value, int state = 0);
 
-    void flip_state();
+    int get_surface_size() const;
 
 protected:
-    int state;
-    std::vector <std::vector<float>> vertices;
+    int surface_size;
+    std::vector<float> vertices[2];
 
     void push_vertex(glm::vec3 &vertex);
 
-    void setup_surface(int surface_size);
+    void setup_surface();
 };
 
 #endif

@@ -61,9 +61,9 @@ void bind_surface(Surface *surface,
     glEnableVertexAttribArray(1);
 }
 
-void bind_vertices(Object *object, unsigned int &vertex_buffer_object) {
+void bind_vertices(Object *object, unsigned int &vertex_buffer_object, int state) {
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * object->get_num_of_vertices(), object->get_vertices(),
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * object->get_num_of_vertices(state), object->get_vertices(state),
                  GL_DYNAMIC_DRAW);
 }
 
