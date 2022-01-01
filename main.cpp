@@ -14,7 +14,7 @@
 #define DRAG_COEFFICIENT 0.47
 #define ACCELERATION -9.8
 #define SURFACE_SIZE 800
-#define MAX_ITER 400
+#define MAX_ITER 100
 
 
 int main(int argc, char **argv) {
@@ -181,14 +181,13 @@ int main(int argc, char **argv) {
             }
             bind_vertices(&surface, surface_vbo, water_state);
             bind_normals(&surface, surface_nbo);
+            iter++;
         }
         glDrawElements(GL_TRIANGLES, surface.get_num_of_indices(), GL_UNSIGNED_INT, 0);
 
         // Display result buffer
         glfwSwapBuffers(window);
         glfwPollEvents();
-
-        iter++;
     }
     double exe_time = CycleTimer::currentSeconds() - start;
     std::cout << "Execution time: " << exe_time << std::endl;
