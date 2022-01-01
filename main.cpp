@@ -13,7 +13,7 @@
 #define AIR_DENSITY 1.29
 #define DRAG_COEFFICIENT 0.47
 #define ACCELERATION -9.8
-#define SURFACE_SIZE 800
+#define SURFACE_SIZE 400
 #define MAX_ITER 100
 
 
