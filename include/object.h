@@ -34,9 +34,10 @@ public:
 
     void set_normal(int index, float value);
 
+    std::vector<float> normals;
+
 protected:
     std::vector<int> indices;
-    std::vector<float> normals;
 
     virtual void push_vertex(glm::vec3 &vertex) = 0;
 

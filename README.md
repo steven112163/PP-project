@@ -38,3 +38,9 @@ unzip glad.zip -d glad
 rm glad.zip
 sudo cp -R glad/include/* /usr/local/include/
 ```
+
+### Run with OpenMP
+
+```bash
+./ripple_simulation <threadNum>
+```

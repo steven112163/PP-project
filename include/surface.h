@@ -26,9 +26,10 @@ public:
 
     int get_surface_size() const;
 
+    std::vector<float> vertices[2];
+
 protected:
     int surface_size;
-    std::vector<float> vertices[2];
 
     void push_vertex(glm::vec3 &vertex);
 

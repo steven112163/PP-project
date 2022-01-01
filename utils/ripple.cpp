@@ -301,75 +301,72 @@ void ripple_serial(Surface *surface, int &state) {
     surface->set_normal(3 * surface_size * z + 3 * x + 2, new_normal.z);
 }
 
-void ripple_omp(Surface *surface, int &state, int num_threads) {
+void ripple_omp(Surface *surface, int &state) {
     // Update vertices
     int x, z;
     float new_y;
     int surface_size = surface->get_surface_size();
-    for (z = 1; z < surface_size - 1; z++) {
+#pragma omp parallel
+    {
+#pragma omp for collapse (2)
         for (x = 1; x < surface_size - 1; x++) {
-            new_y = (surface->get_vertex(3 * surface_size * z + 3 * (x - 1) + 1, state) +
-                     surface->get_vertex(3 * surface_size * z + 3 * (x + 1) + 1, state) +
-                     surface->get_vertex(3 * surface_size * (z - 1) + 3 * x + 1, state) +
-                     surface->get_vertex(3 * surface_size * (z + 1) + 3 * x + 1, state) +
-                     surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x - 1) + 1, state) +
-                     surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x + 1) + 1, state) +
-                     surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x - 1) + 1, state) +
-                     surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x + 1) + 1, state)) / 4;
-            new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-            new_y -= new_y / DAMP;
-            surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
+            for (z = 1; z < surface_size - 1; z++) {
+                new_y = (surface->vertices[state][3 * surface_size * z + 3 * (x - 1) + 1] +
+                         surface->vertices[state][3 * surface_size * z + 3 * (x + 1) + 1] +
+                         surface->vertices[state][3 * surface_size * (z - 1) + 3 * x + 1] +
+                         surface->vertices[state][3 * surface_size * (z + 1) + 3 * x + 1] +
+                         surface->vertices[state][3 * surface_size * (z - 1) + 3 * (x - 1) + 1] +
+                         surface->vertices[state][3 * surface_size * (z - 1) + 3 * (x + 1) + 1] +
+                         surface->vertices[state][3 * surface_size * (z + 1) + 3 * (x - 1) + 1] +
+                         surface->vertices[state][3 * surface_size * (z + 1) + 3 * (x + 1) + 1]) / 4;
+                new_y -= surface->vertices[1 - state][3 * surface_size * z + 3 * x + 1];
+                new_y -= new_y / DAMP;
+                surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
+            }
         }
-    }
 
-    // Edge vertices
-    z = 0;
-    for (x = 1; x < surface_size - 1; x++) {
-        new_y = (surface->get_vertex(3 * surface_size * z + 3 * (x - 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * z + 3 * (x + 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z + 1) + 3 * x + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x - 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x + 1) + 1, state)) / 2.5;
-        new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-        new_y -= new_y / DAMP;
-        surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
-    }
+        // Edge vertices
+#pragma omp for
+        for (x = 1; x < surface_size - 1; x++) {
+            new_y = (surface->vertices[state][3 * (x - 1) + 1] +
+                     surface->vertices[state][3 * (x + 1) + 1] +
+                     surface->vertices[state][3 * surface_size + 3 * x + 1] +
+                     surface->vertices[state][3 * surface_size + 3 * (x - 1) + 1] +
+                     surface->vertices[state][3 * surface_size + 3 * (x + 1) + 1]) / 2.5;
+            new_y -= surface->vertices[1 - state][3 * x + 1];
+            new_y -= new_y / DAMP;
+            surface->vertices[1 - state][3 * x + 1] = new_y;
 
+            new_y = (surface->vertices[state][3 * surface_size * (surface_size - 1) + 3 * (x - 1) + 1] +
+                     surface->vertices[state][3 * surface_size * (surface_size - 1) + 3 * (x + 1) + 1] +
+                     surface->vertices[state][3 * surface_size * (surface_size - 2) + 3 * x + 1] +
+                     surface->vertices[state][3 * surface_size * (surface_size - 2) + 3 * (x - 1) + 1] +
+                     surface->vertices[state][3 * surface_size * (surface_size - 2) + 3 * (x + 1) + 1]) / 2.5;
+            new_y -= surface->vertices[1 - state][3 * surface_size * (surface_size - 1) + 3 * x + 1];
+            new_y -= new_y / DAMP;
+            surface->vertices[1 - state][3 * surface_size * (surface_size - 1) + 3 * x + 1] = new_y;
+        }
 
-    x = 0;
-    for (z = 1; z < surface_size - 1; z++) {
-        new_y = (surface->get_vertex(3 * surface_size * z + 3 * (x + 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z - 1) + 3 * x + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z + 1) + 3 * x + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x + 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x + 1) + 1, state)) / 2.5;
-        new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-        new_y -= new_y / DAMP;
-        surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
-    }
+#pragma omp for
+        for (z = 1; z < surface_size - 1; z++) {
+            new_y = (surface->vertices[state][3 * surface_size * z + 3 + 1] +
+                     surface->vertices[state][3 * surface_size * (z - 1) + 1] +
+                     surface->vertices[state][3 * surface_size * (z + 1) + 1] +
+                     surface->vertices[state][3 * surface_size * (z - 1) + 3 + 1] +
+                     surface->vertices[state][3 * surface_size * (z + 1) + 3 + 1]) / 2.5;
+            new_y -= surface->vertices[1 - state][3 * surface_size * z + 1];
+            new_y -= new_y / DAMP;
+            surface->vertices[1 - state][3 * surface_size * z + 1] = new_y;
 
-    z = surface_size - 1;
-    for (x = 1; x < surface_size - 1; x++) {
-        new_y = (surface->get_vertex(3 * surface_size * z + 3 * (x - 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * z + 3 * (x + 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z - 1) + 3 * x + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x - 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x + 1) + 1, state)) / 2.5;
-        new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-        new_y -= new_y / DAMP;
-        surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
-    }
-
-    x = surface_size - 1;
-    for (z = 1; z < surface_size - 1; z++) {
-        new_y = (surface->get_vertex(3 * surface_size * z + 3 * (x - 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z - 1) + 3 * x + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z + 1) + 3 * x + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x - 1) + 1, state) +
-                 surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x - 1) + 1, state)) / 2.5;
-        new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-        new_y -= new_y / DAMP;
-        surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
+            new_y = (surface->vertices[state][3 * surface_size * z + 3 * (surface_size - 2) + 1] +
+                     surface->vertices[state][3 * surface_size * (z - 1) + 3 * (surface_size - 1) + 1] +
+                     surface->vertices[state][3 * surface_size * (z + 1) + 3 * (surface_size - 1) + 1] +
+                     surface->vertices[state][3 * surface_size * (z - 1) + 3 * (surface_size - 2) + 1] +
+                     surface->vertices[state][3 * surface_size * (z + 1) + 3 * (surface_size - 2) + 1]) / 2.5;
+            new_y -= surface->vertices[1 - state][3 * surface_size * z + 3 * (surface_size - 1) + 1];
+            new_y -= new_y / DAMP;
+            surface->vertices[1 - state][3 * surface_size * z + 3 * (surface_size - 1) + 1] = new_y;
+        }
     }
 
     // Corner vertices

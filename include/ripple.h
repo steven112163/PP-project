@@ -16,4 +16,4 @@
 
 void ripple_serial(Surface *surface, int &state);
 
-void ripple_omp(Surface *surface, int &state, int num_threads);
+void ripple_omp(Surface *surface, int &state);

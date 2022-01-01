@@ -3,6 +3,7 @@
 #include "include/sphere.h"
 #include "include/surface.h"
 #include "include/ripple.h"
+#include "include/CycleTimer.h"
 
 #include <cmath>
 
@@ -12,7 +13,8 @@
 #define AIR_DENSITY 1.29
 #define DRAG_COEFFICIENT 0.47
 #define ACCELERATION -9.8
-#define SURFACE_SIZE 200
+#define SURFACE_SIZE 800
+#define MAX_ITER 400
 
 
 int main(int argc, char **argv) {
@@ -125,7 +127,9 @@ int main(int argc, char **argv) {
 
     // Start rendering
     int water_state = 0;
-    while (!glfwWindowShouldClose(window)) {
+    int iter = 0;
+    double start = CycleTimer::currentSeconds();
+    while (!glfwWindowShouldClose(window) && iter < MAX_ITER) {
         // Get delta time
         float current_frame = glfwGetTime();
         delta_time = current_frame - last_frame;
@@ -173,7 +177,7 @@ int main(int argc, char **argv) {
             if (thread_count == -1) {
                 ripple_serial(&surface, water_state);
             } else {
-                ripple_omp(&surface, water_state, thread_count);
+                ripple_omp(&surface, water_state);
             }
             bind_vertices(&surface, surface_vbo, water_state);
             bind_normals(&surface, surface_nbo);
@@ -183,7 +187,11 @@ int main(int argc, char **argv) {
         // Display result buffer
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        iter++;
     }
+    double exe_time = CycleTimer::currentSeconds() - start;
+    std::cout << "Execution time: " << exe_time << std::endl;
 
     // Deallocate and terminate
     deallocate_and_terminate(&shader,
