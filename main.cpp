@@ -15,7 +15,20 @@
 #define SURFACE_SIZE 200
 
 
-int main() {
+int main(int argc, char **argv) {
+    int thread_count = -1;
+    bool useOmp = false;
+
+    // OpenMP thread settings
+    if (argc == 2) {
+        thread_count = atoi(argv[1]);
+        std::cout << "----------------------------------------------------------\n";
+        std::cout << "Max system threads = " << omp_get_max_threads() << " \n";
+        std::cout << "Running with " << thread_count << " threads" << std::endl;
+        std::cout << "----------------------------------------------------------\n";
+        omp_set_num_threads(thread_count);
+    }
+
     // Initialize GLFW
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -157,7 +170,11 @@ int main() {
         shader.use();
         glBindVertexArray(surface_vao);
         if (reached_time != 0.0f) {
-            ripple_serial(&surface, water_state);
+            if (thread_count == -1) {
+                ripple_serial(&surface, water_state);
+            } else {
+                ripple_omp(&surface, water_state, thread_count);
+            }
             bind_vertices(&surface, surface_vbo, water_state);
             bind_normals(&surface, surface_nbo);
         }
