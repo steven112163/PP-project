@@ -14,4 +14,4 @@ $(EXE): $(SRC)
 .PHONY: clean
 
 clean:
-	rm -f $(EXE)
+	rm -f $(EXE) $(PROF_EXE)

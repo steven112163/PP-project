@@ -6,6 +6,7 @@
 #include "include/CycleTimer.h"
 
 #include <cmath>
+#include <cfloat>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -128,7 +129,7 @@ int main(int argc, char **argv) {
     // Start rendering
     int water_state = 0;
     int iter = 0;
-    double start = CycleTimer::currentSeconds();
+    double start, end, avg_time = 0.0, min_time = DBL_MAX, max_time = DBL_MIN;
     while (!glfwWindowShouldClose(window) && iter < MAX_ITER) {
         // Get delta time
         float current_frame = glfwGetTime();
@@ -174,11 +175,17 @@ int main(int argc, char **argv) {
         shader.use();
         glBindVertexArray(surface_vao);
         if (reached_time != 0.0f) {
+            start = CycleTimer::currentSeconds();
             if (thread_count == -1) {
                 ripple_serial(&surface, water_state);
             } else {
                 ripple_omp(&surface, water_state);
             }
+            end = CycleTimer::currentSeconds();
+            avg_time = (avg_time * iter + end - start) / (iter + 1);
+            min_time = std::min(min_time, end - start);
+            max_time = std::max(max_time, end - start);
+
             bind_vertices(&surface, surface_vbo, water_state);
             bind_normals(&surface, surface_nbo);
             iter++;
@@ -189,8 +196,9 @@ int main(int argc, char **argv) {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    double exe_time = CycleTimer::currentSeconds() - start;
-    std::cout << "Execution time: " << exe_time << std::endl;
+    std::cout << "Average execution time: " << avg_time << "\n"
+              << "Minimum execution time: " << min_time << "\n"
+              << "Maximum execution time: " << max_time << std::endl;
 
     // Deallocate and terminate
     deallocate_and_terminate(&shader,
