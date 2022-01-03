@@ -28,6 +28,8 @@ public:
 
     [[nodiscard]] int get_surface_size() const;
 
+    [[nodiscard]] int get_vertices_size() const;
+
     float *vertices[2]{};
 
 protected:

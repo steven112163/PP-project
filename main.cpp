@@ -4,6 +4,7 @@
 #include "include/surface.h"
 #include "include/ripple.h"
 #include "include/CycleTimer.h"
+#include "include/ripple_cuda.h"
 
 #include <cmath>
 #include <cfloat>
@@ -21,9 +22,9 @@ void usage(const char *program_name) {
     std::cout << "Usage: " << program_name << " [options]\n"
               << "Program Options:\n"
               << "  -s  --surface    <INT>    Surface size (default: 400)\n"
-              << "  -d  --damp       <INT>    Damp coefficient (default: 20)\n"
               << "  -i  --iter       <INT>    Max iteration (default: 100)\n"
               << "  -t  --thread     <INT>    Number of threads (default: -1)\n"
+              << "  -g  --gpu        <INT>    Use GPU (default: 0)\n"
               << "  -?  --help                This message\n";
 }
 
@@ -32,6 +33,7 @@ int main(int argc, char **argv) {
     int damp = surface_size / 5;
     int max_iter = 100;
     int thread_count = -1;
+    bool use_gpu = false;
     bool useOmp = false;
 
     // Parse arguments
@@ -40,9 +42,10 @@ int main(int argc, char **argv) {
             {"surface", 1, 0, 's'},
             {"iter",    1, 0, 'i'},
             {"thread",  1, 0, 't'},
+            {"gpu",     1, 0, 'g'},
             {"help",    0, 0, 'h'},
             {0,         0, 0, 0}};
-    while ((opt = getopt_long(argc, argv, "s:i:t:h", long_options, NULL)) != EOF) {
+    while ((opt = getopt_long(argc, argv, "s:i:t:g:h", long_options, NULL)) != EOF) {
         switch (opt) {
             case 's': {
                 surface_size = atoi(optarg);
@@ -57,6 +60,10 @@ int main(int argc, char **argv) {
                 thread_count = atoi(optarg);
                 break;
             }
+            case 'g': {
+                use_gpu = (atoi(optarg) == 1) ? true : false;
+                break;
+            }
             case 'h':
             default:
                 usage(argv[0]);
@@ -67,6 +74,7 @@ int main(int argc, char **argv) {
     std::cout << "----------------------------------------------------------\n";
     std::cout << "Surface size: " << surface_size << "\n";
     std::cout << "Max iteration: " << max_iter << "\n";
+    std::cout << "Use GPU: " << ((use_gpu) ? "True" : "False") << "\n";
     std::cout << "----------------------------------------------------------\n";
 
     // OpenMP thread settings
@@ -234,11 +242,12 @@ int main(int argc, char **argv) {
         glBindVertexArray(surface_vao);
         if (reached) {
             start = CycleTimer::currentSeconds();
-            if (thread_count == -1) {
+            if (use_gpu)
+                ripple_cuda(&surface, water_state, damp);
+            if (thread_count == -1)
                 ripple_serial(&surface, water_state, damp);
-            } else {
+            else
                 ripple_omp(&surface, water_state, damp);
-            }
             end = CycleTimer::currentSeconds();
             avg_time = (avg_time * iter + end - start) / (iter + 1);
             min_time = std::min(min_time, end - start);

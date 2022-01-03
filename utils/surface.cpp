@@ -26,6 +26,10 @@ int Surface::get_surface_size() const {
     return this->surface_size;
 }
 
+int Surface::get_vertices_size() const {
+    return this->vertices_size;
+}
+
 void Surface::setup_surface() {
     float step = 2.0f / static_cast<float>(this->surface_size - 1);
     this->vertices_size = surface_size * surface_size * 3;
