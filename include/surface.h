@@ -14,24 +14,28 @@
 
 class Surface : public Object {
 public:
-    Surface(int surface_size = 200);
+    explicit Surface(int surface_size = 200);
 
-    unsigned int get_num_of_vertices(int state = 0) const;
+    ~Surface();
 
-    const float *get_vertices(int state = 0) const;
+    [[nodiscard]] unsigned int get_num_of_vertices(int state) const override;
 
-    float get_vertex(int index, int state = 0);
+    [[nodiscard]] const float *get_vertices(int state) const override;
 
-    void set_vertex(int index, float value, int state = 0);
+    float get_vertex(int index, int state) override;
 
-    int get_surface_size() const;
+    void set_vertex(int index, float value, int state) override;
 
-    std::vector<float> vertices[2];
+    [[nodiscard]] int get_surface_size() const;
+
+    float *vertices[2]{};
 
 protected:
     int surface_size;
 
-    void push_vertex(glm::vec3 &vertex);
+    int vertices_size{};
+
+    void push_vertex(glm::vec3 &vertex) override;
 
     void setup_surface();
 };

@@ -200,8 +200,8 @@ int main(int argc, char **argv) {
                 double coeff = -0.05 * 200 / surface_size;
                 for (int z = 0; z < surface_size; z++) {
                     for (int x = 0; x < surface_size; x++) {
-                        float x_coord = surface.get_vertex(surface_stride * z + 3 * x) * 1.3f;
-                        float z_coord = surface.get_vertex(surface_stride * z + 3 * x + 2) * 1.3f;
+                        float x_coord = surface.get_vertex(surface_stride * z + 3 * x, water_state) * 1.3f;
+                        float z_coord = surface.get_vertex(surface_stride * z + 3 * x + 2, water_state) * 1.3f;
                         float distance = std::sqrt(x_coord * x_coord + z_coord * z_coord);
                         if (distance <= 0.1f) {
                             surface.set_vertex(surface_stride * z + 3 * x + 1,

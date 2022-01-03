@@ -1,3 +1,6 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "openmp-use-default-none"
+
 #include "../include/ripple.h"
 
 void ripple_serial(Surface *surface, int &state, int &damp) {
@@ -600,3 +603,5 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
     surface->set_normal(surface_stride * z + 3 * x + 1, new_normal.y);
     surface->set_normal(surface_stride * z + 3 * x + 2, new_normal.z);*/
 }
+
+#pragma clang diagnostic pop
