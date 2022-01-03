@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <cfloat>
+#include <getopt.h>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -14,17 +15,67 @@
 #define AIR_DENSITY 1.29
 #define DRAG_COEFFICIENT 0.47
 #define ACCELERATION -9.8
-#define SURFACE_SIZE 400
-#define MAX_ITER 100
 
+
+void usage(const char *program_name) {
+    std::cout << "Usage: " << program_name << " [options]\n"
+              << "Program Options:\n"
+              << "  -s  --surface    <INT>    Surface size (default: 400)\n"
+              << "  -d  --damp       <INT>    Damp coefficient (default: 20)\n"
+              << "  -i  --iter       <INT>    Max iteration (default: 100)\n"
+              << "  -t  --thread     <INT>    Number of threads (default: -1)\n"
+              << "  -?  --help                This message\n";
+}
 
 int main(int argc, char **argv) {
+    int surface_size = 400;
+    int damp = 20;
+    int max_iter = 100;
     int thread_count = -1;
     bool useOmp = false;
 
+    // Parse arguments
+    int opt;
+    static struct option long_options[] = {
+            {"surface", 1, 0, 's'},
+            {"damp",    1, 0, 'd'},
+            {"iter",    1, 0, 'i'},
+            {"thread",  1, 0, 't'},
+            {"help",    0, 0, 'h'},
+            {0,         0, 0, 0}};
+    while ((opt = getopt_long(argc, argv, "s:d:i:t:h", long_options, NULL)) != EOF) {
+        switch (opt) {
+            case 's': {
+                surface_size = atoi(optarg);
+                break;
+            }
+            case 'd': {
+                damp = atoi(optarg);
+                break;
+            }
+            case 'i': {
+                max_iter = atoi(optarg);
+                break;
+            }
+            case 't': {
+                thread_count = atoi(optarg);
+                break;
+            }
+            case 'h':
+            default:
+                usage(argv[0]);
+                return 1;
+        }
+    }
+
+    std::cout << "----------------------------------------------------------\n";
+    std::cout << "Surface size: " << surface_size << "\n";
+    std::cout << "Damp: " << damp << "\n";
+    std::cout << "Max iteration: " << max_iter << "\n";
+    std::cout << "----------------------------------------------------------\n";
+
     // OpenMP thread settings
-    if (argc == 2) {
-        thread_count = atoi(argv[1]);
+    if (thread_count != -1) {
         std::cout << "----------------------------------------------------------\n";
         std::cout << "Max system threads = " << omp_get_max_threads() << " \n";
         std::cout << "Running with " << thread_count << " threads" << std::endl;
@@ -115,7 +166,7 @@ int main(int argc, char **argv) {
     bind_sphere(&sphere, sphere_vao, sphere_vbo, sphere_nbo);
 
     // Setup surface
-    Surface surface(SURFACE_SIZE);
+    Surface surface(surface_size);
 
     // Bind vertex buffer, element buffer, normal buffer and vertex attribute for surface
     unsigned int surface_vbo, surface_ebo, surface_nbo, surface_vao;
@@ -124,13 +175,13 @@ int main(int argc, char **argv) {
     // Timing
     float delta_time = 0.0f;
     float last_frame = 0.0f;
-    float reached_time = 0.0f;
+    bool reached = false;
 
     // Start rendering
     int water_state = 0;
     int iter = 0;
     double start, end, avg_time = 0.0, min_time = DBL_MAX, max_time = DBL_MIN;
-    while (!glfwWindowShouldClose(window) && iter < MAX_ITER) {
+    while (!glfwWindowShouldClose(window) && iter < max_iter) {
         // Get delta time
         float current_frame = glfwGetTime();
         delta_time = current_frame - last_frame;
@@ -148,11 +199,22 @@ int main(int argc, char **argv) {
             translation += (current_velocity + velocity) / 2.0f * delta_time;
 
             // Check if the sphere reaches the surface
-            if (translation <= 0.0f && reached_time == 0.0f) {
-                reached_time = current_frame;
-                surface.set_vertex(3 * SURFACE_SIZE * (int) (SURFACE_SIZE / 2) + 3 * (int) (SURFACE_SIZE / 2) + 1,
-                                   -0.5f,
-                                   1 - water_state);
+            if (translation <= 0.0f && !reached) {
+                reached = true;
+                int surface_stride = 3 * surface_size;
+                for (int z = 0; z < surface_size; z++) {
+                    for (int x = 0; x < surface_size; x++) {
+                        float x_coord = surface.get_vertex(surface_stride * z + 3 * x) * 1.3f;
+                        float z_coord = surface.get_vertex(surface_stride * z + 3 * x + 2) * 1.3f;
+                        float distance = std::sqrt(x_coord * x_coord + z_coord * z_coord);
+                        if (distance <= 0.1f) {
+                            surface.set_vertex(surface_stride * z + 3 * x + 1,
+                                               -0.05 * std::cos(distance / 0.1f * 0.5 * PI) /
+                                               std::sin(distance / 0.1f * 0.5 * PI),
+                                               1 - water_state);
+                        }
+                    }
+                }
             }
 
             // Get new transformation
@@ -174,12 +236,12 @@ int main(int argc, char **argv) {
         shader.set_normal_matrix(surface_normal_matrix);
         shader.use();
         glBindVertexArray(surface_vao);
-        if (reached_time != 0.0f) {
+        if (reached) {
             start = CycleTimer::currentSeconds();
             if (thread_count == -1) {
-                ripple_serial(&surface, water_state);
+                ripple_serial(&surface, water_state, damp);
             } else {
-                ripple_omp(&surface, water_state);
+                ripple_omp(&surface, water_state, damp);
             }
             end = CycleTimer::currentSeconds();
             avg_time = (avg_time * iter + end - start) / (iter + 1);

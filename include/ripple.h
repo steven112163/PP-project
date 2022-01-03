@@ -12,8 +12,7 @@
 #include <cmath>
 
 #define PI 3.1415926
-#define DAMP 20
 
-void ripple_serial(Surface *surface, int &state);
+void ripple_serial(Surface *surface, int &state, int &damp);
 
-void ripple_omp(Surface *surface, int &state);
+void ripple_omp(Surface *surface, int &state, int &damp);

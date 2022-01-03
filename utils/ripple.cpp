@@ -1,6 +1,6 @@
 #include "../include/ripple.h"
 
-void ripple_serial(Surface *surface, int &state) {
+void ripple_serial(Surface *surface, int &state, int &damp) {
     // Update vertices
     int x, z;
     float new_y;
@@ -16,7 +16,7 @@ void ripple_serial(Surface *surface, int &state) {
                      surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x - 1) + 1, state) +
                      surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x + 1) + 1, state)) / 4;
             new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-            new_y -= new_y / DAMP;
+            new_y -= new_y / damp;
             surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
         }
     }
@@ -30,7 +30,7 @@ void ripple_serial(Surface *surface, int &state) {
                  surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x - 1) + 1, state) +
                  surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x + 1) + 1, state)) / 2.5;
         new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-        new_y -= new_y / DAMP;
+        new_y -= new_y / damp;
         surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
     }
 
@@ -43,7 +43,7 @@ void ripple_serial(Surface *surface, int &state) {
                  surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x + 1) + 1, state) +
                  surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x + 1) + 1, state)) / 2.5;
         new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-        new_y -= new_y / DAMP;
+        new_y -= new_y / damp;
         surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
     }
 
@@ -55,7 +55,7 @@ void ripple_serial(Surface *surface, int &state) {
                  surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x - 1) + 1, state) +
                  surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x + 1) + 1, state)) / 2.5;
         new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-        new_y -= new_y / DAMP;
+        new_y -= new_y / damp;
         surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
     }
 
@@ -67,7 +67,7 @@ void ripple_serial(Surface *surface, int &state) {
                  surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x - 1) + 1, state) +
                  surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x - 1) + 1, state)) / 2.5;
         new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-        new_y -= new_y / DAMP;
+        new_y -= new_y / damp;
         surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
     }
 
@@ -78,7 +78,7 @@ void ripple_serial(Surface *surface, int &state) {
              surface->get_vertex(3 * surface_size * (z + 1) + 3 * x + 1, state) +
              surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x + 1) + 1, state)) / 1.5;
     new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-    new_y -= new_y / DAMP;
+    new_y -= new_y / damp;
     surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
 
     z = 0;
@@ -87,7 +87,7 @@ void ripple_serial(Surface *surface, int &state) {
              surface->get_vertex(3 * surface_size * (z + 1) + 3 * x + 1, state) +
              surface->get_vertex(3 * surface_size * (z + 1) + 3 * (x - 1) + 1, state)) / 1.5;
     new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-    new_y -= new_y / DAMP;
+    new_y -= new_y / damp;
     surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
 
     z = surface_size - 1;
@@ -96,7 +96,7 @@ void ripple_serial(Surface *surface, int &state) {
              surface->get_vertex(3 * surface_size * (z - 1) + 3 * x + 1, state) +
              surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x + 1) + 1, state)) / 1.5;
     new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-    new_y -= new_y / DAMP;
+    new_y -= new_y / damp;
     surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
 
     z = surface_size - 1;
@@ -105,7 +105,7 @@ void ripple_serial(Surface *surface, int &state) {
              surface->get_vertex(3 * surface_size * (z - 1) + 3 * x + 1, state) +
              surface->get_vertex(3 * surface_size * (z - 1) + 3 * (x - 1) + 1, state)) / 1.5;
     new_y -= surface->get_vertex(3 * surface_size * z + 3 * x + 1, 1 - state);
-    new_y -= new_y / DAMP;
+    new_y -= new_y / damp;
     surface->set_vertex(3 * surface_size * z + 3 * x + 1, new_y, 1 - state);
 
     // Change current state
@@ -301,7 +301,7 @@ void ripple_serial(Surface *surface, int &state) {
     surface->set_normal(3 * surface_size * z + 3 * x + 2, new_normal.z);
 }
 
-void ripple_omp(Surface *surface, int &state) {
+void ripple_omp(Surface *surface, int &state, int &damp) {
     // Update vertices
     int x, z;
     float new_y;
@@ -321,7 +321,7 @@ void ripple_omp(Surface *surface, int &state) {
                          surface->vertices[state][surface_stride * (z + 1) + 3 * (x - 1) + 1] +
                          surface->vertices[state][surface_stride * (z + 1) + 3 * (x + 1) + 1]) / 4;
                 new_y -= surface->vertices[1 - state][surface_stride * z + 3 * x + 1];
-                new_y -= new_y / DAMP;
+                new_y -= new_y / damp;
                 surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);
             }
         }
@@ -335,7 +335,7 @@ void ripple_omp(Surface *surface, int &state) {
                      surface->vertices[state][surface_stride + 3 * (x - 1) + 1] +
                      surface->vertices[state][surface_stride + 3 * (x + 1) + 1]) / 2.5;
             new_y -= surface->vertices[1 - state][3 * x + 1];
-            new_y -= new_y / DAMP;
+            new_y -= new_y / damp;
             surface->vertices[1 - state][3 * x + 1] = new_y;
 
             new_y = (surface->vertices[state][surface_stride * (surface_size - 1) + 3 * (x - 1) + 1] +
@@ -344,7 +344,7 @@ void ripple_omp(Surface *surface, int &state) {
                      surface->vertices[state][surface_stride * (surface_size - 2) + 3 * (x - 1) + 1] +
                      surface->vertices[state][surface_stride * (surface_size - 2) + 3 * (x + 1) + 1]) / 2.5;
             new_y -= surface->vertices[1 - state][surface_stride * (surface_size - 1) + 3 * x + 1];
-            new_y -= new_y / DAMP;
+            new_y -= new_y / damp;
             surface->vertices[1 - state][surface_stride * (surface_size - 1) + 3 * x + 1] = new_y;
         }
 
@@ -356,7 +356,7 @@ void ripple_omp(Surface *surface, int &state) {
                      surface->vertices[state][surface_stride * (z - 1) + 3 + 1] +
                      surface->vertices[state][surface_stride * (z + 1) + 3 + 1]) / 2.5;
             new_y -= surface->vertices[1 - state][surface_stride * z + 1];
-            new_y -= new_y / DAMP;
+            new_y -= new_y / damp;
             surface->vertices[1 - state][surface_stride * z + 1] = new_y;
 
             new_y = (surface->vertices[state][surface_stride * z + 3 * (surface_size - 2) + 1] +
@@ -365,7 +365,7 @@ void ripple_omp(Surface *surface, int &state) {
                      surface->vertices[state][surface_stride * (z - 1) + 3 * (surface_size - 2) + 1] +
                      surface->vertices[state][surface_stride * (z + 1) + 3 * (surface_size - 2) + 1]) / 2.5;
             new_y -= surface->vertices[1 - state][surface_stride * z + 3 * (surface_size - 1) + 1];
-            new_y -= new_y / DAMP;
+            new_y -= new_y / damp;
             surface->vertices[1 - state][surface_stride * z + 3 * (surface_size - 1) + 1] = new_y;
         }
     }
@@ -377,7 +377,7 @@ void ripple_omp(Surface *surface, int &state) {
              surface->get_vertex(surface_stride * (z + 1) + 3 * x + 1, state) +
              surface->get_vertex(surface_stride * (z + 1) + 3 * (x + 1) + 1, state)) / 1.5;
     new_y -= surface->get_vertex(surface_stride * z + 3 * x + 1, 1 - state);
-    new_y -= new_y / DAMP;
+    new_y -= new_y / damp;
     surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);
 
     z = 0;
@@ -386,7 +386,7 @@ void ripple_omp(Surface *surface, int &state) {
              surface->get_vertex(surface_stride * (z + 1) + 3 * x + 1, state) +
              surface->get_vertex(surface_stride * (z + 1) + 3 * (x - 1) + 1, state)) / 1.5;
     new_y -= surface->get_vertex(surface_stride * z + 3 * x + 1, 1 - state);
-    new_y -= new_y / DAMP;
+    new_y -= new_y / damp;
     surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);
 
     z = surface_size - 1;
@@ -395,7 +395,7 @@ void ripple_omp(Surface *surface, int &state) {
              surface->get_vertex(surface_stride * (z - 1) + 3 * x + 1, state) +
              surface->get_vertex(surface_stride * (z - 1) + 3 * (x + 1) + 1, state)) / 1.5;
     new_y -= surface->get_vertex(surface_stride * z + 3 * x + 1, 1 - state);
-    new_y -= new_y / DAMP;
+    new_y -= new_y / damp;
     surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);
 
     z = surface_size - 1;
@@ -404,7 +404,7 @@ void ripple_omp(Surface *surface, int &state) {
              surface->get_vertex(surface_stride * (z - 1) + 3 * x + 1, state) +
              surface->get_vertex(surface_stride * (z - 1) + 3 * (x - 1) + 1, state)) / 1.5;
     new_y -= surface->get_vertex(surface_stride * z + 3 * x + 1, 1 - state);
-    new_y -= new_y / DAMP;
+    new_y -= new_y / damp;
     surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);*/
 
     // Change current state
