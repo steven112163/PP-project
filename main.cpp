@@ -196,9 +196,9 @@ int main(int argc, char **argv) {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    std::cout << "Average execution time: " << avg_time << "\n"
-              << "Minimum execution time: " << min_time << "\n"
-              << "Maximum execution time: " << max_time << std::endl;
+    std::cout << "Average execution time: " << avg_time * 1000 << " ms\n"
+              << "Minimum execution time: " << min_time * 1000 << " ms\n"
+              << "Maximum execution time: " << max_time * 1000 << " ms" << std::endl;
 
     // Deallocate and terminate
     deallocate_and_terminate(&shader,
