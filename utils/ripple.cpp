@@ -304,10 +304,11 @@ void ripple_serial(Surface *surface, int &state, int &damp) {
     surface->set_normal(3 * surface_size * z + 3 * x + 2, new_normal.z);
 }
 
-void ripple_omp(Surface *surface, int &state, int &damp) {
+void ripple_omp(Surface *surface, int &state, int &dampI) {
     // Update vertices
     int x, z;
     float new_y;
+    auto damp = float(dampI);
     int surface_size = surface->get_surface_size();
     const int surface_stride = 3 * surface_size;
 #pragma omp parallel
@@ -322,7 +323,7 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
                          surface->vertices[state][surface_stride * (z - 1) + 3 * (x - 1) + 1] +
                          surface->vertices[state][surface_stride * (z - 1) + 3 * (x + 1) + 1] +
                          surface->vertices[state][surface_stride * (z + 1) + 3 * (x - 1) + 1] +
-                         surface->vertices[state][surface_stride * (z + 1) + 3 * (x + 1) + 1]) / 4;
+                         surface->vertices[state][surface_stride * (z + 1) + 3 * (x + 1) + 1]) / 4.0f;
                 new_y -= surface->vertices[1 - state][surface_stride * z + 3 * x + 1];
                 new_y -= new_y / damp;
                 surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);
@@ -336,7 +337,7 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
                      surface->vertices[state][3 * (x + 1) + 1] +
                      surface->vertices[state][surface_stride + 3 * x + 1] +
                      surface->vertices[state][surface_stride + 3 * (x - 1) + 1] +
-                     surface->vertices[state][surface_stride + 3 * (x + 1) + 1]) / 2.5;
+                     surface->vertices[state][surface_stride + 3 * (x + 1) + 1]) / 2.5f;
             new_y -= surface->vertices[1 - state][3 * x + 1];
             new_y -= new_y / damp;
             surface->vertices[1 - state][3 * x + 1] = new_y;
@@ -345,7 +346,7 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
                      surface->vertices[state][surface_stride * (surface_size - 1) + 3 * (x + 1) + 1] +
                      surface->vertices[state][surface_stride * (surface_size - 2) + 3 * x + 1] +
                      surface->vertices[state][surface_stride * (surface_size - 2) + 3 * (x - 1) + 1] +
-                     surface->vertices[state][surface_stride * (surface_size - 2) + 3 * (x + 1) + 1]) / 2.5;
+                     surface->vertices[state][surface_stride * (surface_size - 2) + 3 * (x + 1) + 1]) / 2.5f;
             new_y -= surface->vertices[1 - state][surface_stride * (surface_size - 1) + 3 * x + 1];
             new_y -= new_y / damp;
             surface->vertices[1 - state][surface_stride * (surface_size - 1) + 3 * x + 1] = new_y;
@@ -357,7 +358,7 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
                      surface->vertices[state][surface_stride * (z - 1) + 1] +
                      surface->vertices[state][surface_stride * (z + 1) + 1] +
                      surface->vertices[state][surface_stride * (z - 1) + 3 + 1] +
-                     surface->vertices[state][surface_stride * (z + 1) + 3 + 1]) / 2.5;
+                     surface->vertices[state][surface_stride * (z + 1) + 3 + 1]) / 2.5f;
             new_y -= surface->vertices[1 - state][surface_stride * z + 1];
             new_y -= new_y / damp;
             surface->vertices[1 - state][surface_stride * z + 1] = new_y;
@@ -366,19 +367,19 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
                      surface->vertices[state][surface_stride * (z - 1) + 3 * (surface_size - 1) + 1] +
                      surface->vertices[state][surface_stride * (z + 1) + 3 * (surface_size - 1) + 1] +
                      surface->vertices[state][surface_stride * (z - 1) + 3 * (surface_size - 2) + 1] +
-                     surface->vertices[state][surface_stride * (z + 1) + 3 * (surface_size - 2) + 1]) / 2.5;
+                     surface->vertices[state][surface_stride * (z + 1) + 3 * (surface_size - 2) + 1]) / 2.5f;
             new_y -= surface->vertices[1 - state][surface_stride * z + 3 * (surface_size - 1) + 1];
             new_y -= new_y / damp;
             surface->vertices[1 - state][surface_stride * z + 3 * (surface_size - 1) + 1] = new_y;
         }
     }
 
-    /*// Corner vertices
+    // Corner vertices
     z = 0;
     x = 0;
     new_y = (surface->get_vertex(surface_stride * z + 3 * (x + 1) + 1, state) +
              surface->get_vertex(surface_stride * (z + 1) + 3 * x + 1, state) +
-             surface->get_vertex(surface_stride * (z + 1) + 3 * (x + 1) + 1, state)) / 1.5;
+             surface->get_vertex(surface_stride * (z + 1) + 3 * (x + 1) + 1, state)) / 1.5f;
     new_y -= surface->get_vertex(surface_stride * z + 3 * x + 1, 1 - state);
     new_y -= new_y / damp;
     surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);
@@ -387,7 +388,7 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
     x = surface_size - 1;
     new_y = (surface->get_vertex(surface_stride * z + 3 * (x - 1) + 1, state) +
              surface->get_vertex(surface_stride * (z + 1) + 3 * x + 1, state) +
-             surface->get_vertex(surface_stride * (z + 1) + 3 * (x - 1) + 1, state)) / 1.5;
+             surface->get_vertex(surface_stride * (z + 1) + 3 * (x - 1) + 1, state)) / 1.5f;
     new_y -= surface->get_vertex(surface_stride * z + 3 * x + 1, 1 - state);
     new_y -= new_y / damp;
     surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);
@@ -396,7 +397,7 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
     x = 0;
     new_y = (surface->get_vertex(surface_stride * z + 3 * (x + 1) + 1, state) +
              surface->get_vertex(surface_stride * (z - 1) + 3 * x + 1, state) +
-             surface->get_vertex(surface_stride * (z - 1) + 3 * (x + 1) + 1, state)) / 1.5;
+             surface->get_vertex(surface_stride * (z - 1) + 3 * (x + 1) + 1, state)) / 1.5f;
     new_y -= surface->get_vertex(surface_stride * z + 3 * x + 1, 1 - state);
     new_y -= new_y / damp;
     surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);
@@ -405,10 +406,10 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
     x = surface_size - 1;
     new_y = (surface->get_vertex(surface_stride * z + 3 * (x - 1) + 1, state) +
              surface->get_vertex(surface_stride * (z - 1) + 3 * x + 1, state) +
-             surface->get_vertex(surface_stride * (z - 1) + 3 * (x - 1) + 1, state)) / 1.5;
+             surface->get_vertex(surface_stride * (z - 1) + 3 * (x - 1) + 1, state)) / 1.5f;
     new_y -= surface->get_vertex(surface_stride * z + 3 * x + 1, 1 - state);
     new_y -= new_y / damp;
-    surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);*/
+    surface->set_vertex(surface_stride * z + 3 * x + 1, new_y, 1 - state);
 
     // Change current state
     state = 1 - state;
@@ -444,7 +445,7 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
         }
     }
 
-    /*glm::vec3 point, new_normal, neg_z, pos_z, neg_x, pos_x;
+    glm::vec3 point, new_normal, neg_z, pos_z, neg_x, pos_x;
     // Edge normals
     z = 0;
     for (x = 1; x < surface_size - 1; x++) {
@@ -601,7 +602,7 @@ void ripple_omp(Surface *surface, int &state, int &damp) {
     new_normal = glm::normalize(glm::cross(neg_z, neg_x));
     surface->set_normal(surface_stride * z + 3 * x, new_normal.x);
     surface->set_normal(surface_stride * z + 3 * x + 1, new_normal.y);
-    surface->set_normal(surface_stride * z + 3 * x + 2, new_normal.z);*/
+    surface->set_normal(surface_stride * z + 3 * x + 2, new_normal.z);
 }
 
 #pragma clang diagnostic pop

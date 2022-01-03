@@ -15,4 +15,4 @@
 
 void ripple_serial(Surface *surface, int &state, int &damp);
 
-void ripple_omp(Surface *surface, int &state, int &damp);
+void ripple_omp(Surface *surface, int &state, int &dampI);
