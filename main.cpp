@@ -29,7 +29,7 @@ void usage(const char *program_name) {
 
 int main(int argc, char **argv) {
     int surface_size = 400;
-    int damp = 20;
+    int damp = surface_size / 5;
     int max_iter = 100;
     int thread_count = -1;
     bool useOmp = false;
@@ -38,19 +38,15 @@ int main(int argc, char **argv) {
     int opt;
     static struct option long_options[] = {
             {"surface", 1, 0, 's'},
-            {"damp",    1, 0, 'd'},
             {"iter",    1, 0, 'i'},
             {"thread",  1, 0, 't'},
             {"help",    0, 0, 'h'},
             {0,         0, 0, 0}};
-    while ((opt = getopt_long(argc, argv, "s:d:i:t:h", long_options, NULL)) != EOF) {
+    while ((opt = getopt_long(argc, argv, "s:i:t:h", long_options, NULL)) != EOF) {
         switch (opt) {
             case 's': {
                 surface_size = atoi(optarg);
-                break;
-            }
-            case 'd': {
-                damp = atoi(optarg);
+                damp = surface_size / 5;
                 break;
             }
             case 'i': {
@@ -70,7 +66,6 @@ int main(int argc, char **argv) {
 
     std::cout << "----------------------------------------------------------\n";
     std::cout << "Surface size: " << surface_size << "\n";
-    std::cout << "Damp: " << damp << "\n";
     std::cout << "Max iteration: " << max_iter << "\n";
     std::cout << "----------------------------------------------------------\n";
 
@@ -202,6 +197,7 @@ int main(int argc, char **argv) {
             if (translation <= 0.0f && !reached) {
                 reached = true;
                 int surface_stride = 3 * surface_size;
+                double coeff = -0.05 * 200 / surface_size;
                 for (int z = 0; z < surface_size; z++) {
                     for (int x = 0; x < surface_size; x++) {
                         float x_coord = surface.get_vertex(surface_stride * z + 3 * x) * 1.3f;
@@ -209,7 +205,7 @@ int main(int argc, char **argv) {
                         float distance = std::sqrt(x_coord * x_coord + z_coord * z_coord);
                         if (distance <= 0.1f) {
                             surface.set_vertex(surface_stride * z + 3 * x + 1,
-                                               -0.05 * std::cos(distance / 0.1f * 0.5 * PI) /
+                                               coeff * std::cos(distance / 0.1f * 0.5 * PI) /
                                                std::sin(distance / 0.1f * 0.5 * PI),
                                                1 - water_state);
                         }
