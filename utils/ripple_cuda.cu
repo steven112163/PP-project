@@ -3,14 +3,15 @@
 #define NUM_THREADS 25
 #define NUM_STREAMS 8
 
-__global__ void vertex_kernel(float *d_current_state,
+__global__ void vertex_kernel(const float *d_current_state,
                               float *d_next_state,
                               int offset, float damp,
                               int surface_size) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x, z_in_next_state = blockIdx.y * blockDim.y + threadIdx.y;
-    int z = z_in_next_state + offset;
-    int surface_stride = 3 * surface_size;
-    float new_y = -d_next_state[3 * blockDim.x * z_in_next_state + 3 * x + 1];
+    auto x = blockIdx.x * blockDim.x + threadIdx.x;
+    auto z_in_next_state = blockIdx.y * blockDim.y + threadIdx.y;
+    auto z = z_in_next_state + offset;
+    auto surface_stride = 3 * surface_size;
+    float new_y;
 
     if (x == 0 && z == 0) {
         new_y = (d_current_state[surface_stride * z + 3 * (x + 1) + 1] +
@@ -27,7 +28,7 @@ __global__ void vertex_kernel(float *d_current_state,
     } else if (x == surface_size - 1 && z == surface_size - 1) {
         new_y = (d_current_state[surface_stride * z + 3 * (x - 1) + 1] +
                  d_current_state[surface_stride * (z - 1) + 3 * x + 1] +
-                 d_current_state[surface_stride * (z - 1) + 3 * (x - 1) + 1]) / 1.5;
+                 d_current_state[surface_stride * (z - 1) + 3 * (x - 1) + 1]) / 1.5f;
     } else if (z == 0) {
         new_y = (d_current_state[surface_stride * z + 3 * (x - 1) + 1] +
                  d_current_state[surface_stride * z + 3 * (x + 1) + 1] +
@@ -90,10 +91,10 @@ __global__ void normal_kernel(float *d_current_state,
                               float *d_normal,
                               int offset,
                               int surface_size) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int z_in_normal = blockIdx.y * blockDim.y + threadIdx.y;
-    int z = z_in_normal + offset;
-    int surface_stride = 3 * surface_size;
+    auto x = blockIdx.x * blockDim.x + threadIdx.x;
+    auto z_in_normal = blockIdx.y * blockDim.y + threadIdx.y;
+    auto z = z_in_normal + offset;
+    auto surface_stride = 3 * surface_size;
 
     float3 point = make_float3(d_current_state[surface_stride * z + 3 * x],
                                d_current_state[surface_stride * z + 3 * x + 1],
@@ -201,8 +202,8 @@ __global__ void normal_kernel(float *d_current_state,
 
 void ripple_cuda(Surface *surface, int &state, int &dampI) {
     const int surface_size = surface->get_surface_size();
-    const int vertices_size = surface_size * surface_size * 3 * sizeof(float);
-    float damp = float(dampI);
+    const int vertices_size = surface_size * surface_size * 3 * static_cast<int>(sizeof(float));
+    auto damp = float(dampI);
 
     // Compute grid step and size
     int grid_step = surface_size / NUM_STREAMS;
@@ -220,18 +221,18 @@ void ripple_cuda(Surface *surface, int &state, int &dampI) {
 
     // Create streams
     cudaStream_t streams[NUM_STREAMS];
-    for (int i = 0; i < NUM_STREAMS; i++)
-        cudaStreamCreate(&streams[i]);
+    for (auto &stream: streams)
+        cudaStreamCreate(&stream);
 
     // Start kernels
     dim3 block(NUM_THREADS, NUM_THREADS);
     dim3 grid(surface_size / NUM_THREADS, grid_step / NUM_THREADS);
     int offset = 0;
-    for (int i = 0; i < NUM_STREAMS; i++) {
+    for (auto &stream: streams) {
         cudaMemcpyAsync(d_next_state + vertices_size * offset,
                         surface->vertices[1 - state] + vertices_size * offset,
-                        grid_size, cudaMemcpyHostToDevice, streams[i]);
-        vertex_kernel<<<grid, block, 0, streams[i]>>>(
+                        grid_size, cudaMemcpyHostToDevice, stream);
+        vertex_kernel<<<grid, block, 0, stream>>>(
                 d_current_state,
                 d_next_state,
                 offset, damp,
@@ -239,7 +240,7 @@ void ripple_cuda(Surface *surface, int &state, int &dampI) {
         );
         cudaMemcpyAsync(surface->vertices[1 - state] + vertices_size * offset,
                         d_next_state + vertices_size * offset,
-                        grid_size, cudaMemcpyDeviceToHost, streams[i]);
+                        grid_size, cudaMemcpyDeviceToHost, stream);
         offset += grid_step;
     }
 
@@ -261,8 +262,8 @@ void ripple_cuda(Surface *surface, int &state, int &dampI) {
 
     // Start kernels
     offset = 0;
-    for (int i = 0; i < NUM_STREAMS; i++) {
-        normal_kernel<<<grid, block, 0, streams[i]>>>(
+    for (auto &stream: streams) {
+        normal_kernel<<<grid, block, 0, stream>>>(
                 d_current_state,
                 d_normal,
                 offset,
@@ -270,14 +271,14 @@ void ripple_cuda(Surface *surface, int &state, int &dampI) {
         );
         cudaMemcpyAsync(surface->normals + vertices_size * offset,
                         d_normal + vertices_size * offset,
-                        grid_size, cudaMemcpyDeviceToHost, streams[i]);
+                        grid_size, cudaMemcpyDeviceToHost, stream);
         offset += grid_step;
     }
 
     // Free space
     cudaDeviceSynchronize();
-    for (int i = 0; i < NUM_STREAMS; i++)
-        cudaStreamDestroy(streams[i]);
+    for (auto &stream: streams)
+        cudaStreamDestroy(stream);
     cudaHostUnregister(surface->vertices[state]);
     cudaHostUnregister(surface->normals);
     cudaFree(d_next_state);
