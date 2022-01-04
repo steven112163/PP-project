@@ -201,7 +201,7 @@ __global__ void normal_kernel(float *d_current_state,
 
 void ripple_cuda(Surface *surface, int &state, int &dampI) {
     const int surface_size = surface->get_surface_size();
-    const int vertices_size = surface->get_vertices_size() * sizeof(float);
+    const int vertices_size = surface_size * surface_size * 3 * sizeof(float);
     float damp = float(dampI);
 
     // Compute grid step and size
@@ -254,7 +254,7 @@ void ripple_cuda(Surface *surface, int &state, int &dampI) {
     // Allocate device memory for normals
     float *d_normal;
     cudaMalloc(&d_normal, grid_size);
-    cudaHostRegister(surface->normals.data(), vertices_size, cudaHostRegisterPortable);
+    cudaHostRegister(surface->normals, vertices_size, cudaHostRegisterPortable);
 
     // Copy current state to device
     cudaMemcpy(d_current_state, surface->vertices[state], vertices_size, cudaMemcpyHostToDevice);
@@ -268,7 +268,7 @@ void ripple_cuda(Surface *surface, int &state, int &dampI) {
                 offset,
                 surface_size
         );
-        cudaMemcpyAsync(surface->normals.data() + vertices_size * offset,
+        cudaMemcpyAsync(surface->normals + vertices_size * offset,
                         d_normal + vertices_size * offset,
                         grid_size, cudaMemcpyDeviceToHost, streams[i]);
         offset += grid_step;
@@ -279,7 +279,7 @@ void ripple_cuda(Surface *surface, int &state, int &dampI) {
     for (int i = 0; i < NUM_STREAMS; i++)
         cudaStreamDestroy(streams[i]);
     cudaHostUnregister(surface->vertices[state]);
-    cudaHostUnregister(surface->normals.data());
+    cudaHostUnregister(surface->normals);
     cudaFree(d_next_state);
     cudaFree(d_normal);
 }
