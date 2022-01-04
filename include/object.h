@@ -14,36 +14,26 @@ class Object {
 public:
     Object();
 
-    virtual unsigned int get_num_of_vertices(int state = 0) const = 0;
+    virtual unsigned int get_num_of_vertices() const = 0;
 
     virtual const float *get_vertices(int state = 0) const = 0;
-
-    virtual float get_vertex(int index, int state = 0) = 0;
-
-    virtual void set_vertex(int index, float value, int state = 0) = 0;
 
     unsigned int get_num_of_indices() const;
 
     const int *get_indices() const;
 
-    unsigned int get_num_of_normals() const;
+    virtual unsigned int get_num_of_normals() const = 0;
 
-    const float *get_normals() const;
-
-    float get_normal(int index);
-
-    void set_normal(int index, float value);
-
-    std::vector<float> normals;
+    virtual const float *get_normals() const = 0;
 
 protected:
     std::vector<int> indices;
 
-    virtual void push_vertex(glm::vec3 &vertex) = 0;
+    virtual void push_vertex(glm::vec3 &vertex, int idx = 0) = 0;
 
     void push_index(int a, int b, int c);
 
-    void push_normal(glm::vec3 &normal);
+    virtual void push_normal(glm::vec3 &normal, int idx = 0) = 0;
 };
 
 #endif
