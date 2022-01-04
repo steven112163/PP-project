@@ -47,6 +47,11 @@ sudo cp -R glad/include/* /usr/local/include/
 
 ## Experiment
 
+### Different surface size & iterations?
+
+- `./test_all.sh <surface_size> <iterations>`
+- This will generate `report_<surface_size>_<iterations>.txt`, which is CSV format. 
+
 ### Use `for collapse` or not?
 
 - `-s 800 -i 200 -t 4`

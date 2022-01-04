@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <cfloat>
+#include <iomanip>
 #include <getopt.h>
 
 #define WINDOW_WIDTH 800
@@ -31,6 +32,7 @@ int main(int argc, char **argv) {
     int damp = surface_size / 5;
     int max_iter = 100;
     int thread_count = -1;
+    bool csv_format = false;
 
     // Parse arguments
     int opt;
@@ -39,8 +41,9 @@ int main(int argc, char **argv) {
             {"iter",    1, 0, 'i'},
             {"thread",  1, 0, 't'},
             {"help",    0, 0, 'h'},
+            {"csv",     0, 0, 'c'},
             {0,         0, 0, 0}};
-    while ((opt = getopt_long(argc, argv, "s:i:t:h", long_options, NULL)) != EOF) {
+    while ((opt = getopt_long(argc, argv, "s:i:t:h:c", long_options, NULL)) != EOF) {
         switch (opt) {
             case 's': {
                 surface_size = atoi(optarg);
@@ -55,6 +58,10 @@ int main(int argc, char **argv) {
                 thread_count = atoi(optarg);
                 break;
             }
+            case 'c': {
+                csv_format = true;
+                break;
+            }
             case 'h':
             default:
                 usage(argv[0]);
@@ -62,18 +69,18 @@ int main(int argc, char **argv) {
         }
     }
 
-    std::cout << "----------------------------------------------------------\n";
-    std::cout << "Surface size: " << surface_size << "\n";
-    std::cout << "Max iteration: " << max_iter << "\n";
-    std::cout << "----------------------------------------------------------\n";
-
-    // OpenMP thread settings
-    if (thread_count != -1) {
+    if (!csv_format) {
         std::cout << "----------------------------------------------------------\n";
-        std::cout << "Max system threads = " << omp_get_max_threads() << " \n";
-        std::cout << "Running with " << thread_count << " threads" << std::endl;
+        std::cout << "Surface size: " << surface_size << "\n";
+        std::cout << "Max iteration: " << max_iter << "\n";
         std::cout << "----------------------------------------------------------\n";
-        omp_set_num_threads(thread_count);
+        // OpenMP thread settings
+        if (thread_count != -1) {
+            std::cout << "Max system threads = " << omp_get_max_threads() << " \n";
+            std::cout << "Running with " << thread_count << " threads" << std::endl;
+            std::cout << "----------------------------------------------------------\n";
+            omp_set_num_threads(thread_count);
+        }
     }
 
     // Initialize GLFW
@@ -249,9 +256,19 @@ int main(int argc, char **argv) {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    std::cout << "Average execution time: " << avg_time * 1000 << " ms\n"
-              << "Minimum execution time: " << min_time * 1000 << " ms\n"
-              << "Maximum execution time: " << max_time * 1000 << " ms" << std::endl;
+
+    if (!csv_format) {
+        std::cout << "Average execution time: " << avg_time * 1000 << " ms\n"
+                  << "Minimum execution time: " << min_time * 1000 << " ms\n"
+                  << "Maximum execution time: " << max_time * 1000 << " ms" << std::endl;
+    } else {
+        std::cout << std::setw(2) <<
+                  thread_count << ",";
+        std::cout <<
+                  avg_time << "," <<
+                  min_time << "," <<
+                  max_time << std::endl;
+    }
 
     // Deallocate and terminate
     deallocate_and_terminate(&shader,
