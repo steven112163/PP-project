@@ -44,3 +44,18 @@ sudo cp -R glad/include/* /usr/local/include/
 ```bash
 ./ripple_simulation -s <surface_size> -i <max_iter> -t <thread_num>
 ```
+
+## Experiment
+
+### Use `for collapse` or not?
+
+- `-s 800 -i 200 -t 4`
+- for collapse(2)
+    - Average execution time: 4.23319 ms
+    - Minimum execution time: 3.41811 ms
+    - Maximum execution time: 22.4012 ms
+- for
+    - Average execution time: 10.7506 ms
+    - Minimum execution time: 10.2692 ms
+    - Maximum execution time: 30.0684 ms
+
