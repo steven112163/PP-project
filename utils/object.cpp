@@ -1,6 +1,6 @@
 #include "../include/object.h"
 
-Object::Object() {}
+Object::Object() = default;
 
 unsigned int Object::get_num_of_indices() const {
     return this->indices.size();

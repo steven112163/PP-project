@@ -1,20 +1,20 @@
-CFLAGS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -std=c++17 -fopenmp -O3 -I. -I./include -I./utils
-PROF_FLAGS = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -std=c++17 -fopenmp -O0 -I. -I./include -I./utils -pg
-CUDA_LINK_FLAGS =  -rdc=true -gencode=arch=compute_61,code=sm_61 -Xcompiler '-fPIC' -I. -I./include
-CUDA_COMPILE_FLAGS = --device-c -gencode=arch=compute_61,code=sm_61 -Xcompiler '-fPIC' -g -O3 -I. -I./include
+NVCC = /usr/local/cuda-11.5/bin/nvcc
+CXX = g++
 
-SRC = main.cpp utils/glad.c utils/object.cpp utils/ripple.cpp utils/shader.cpp utils/sphere.cpp utils/surface.cpp utils/util.cpp
+INCLUDES = -I. -I./include -I./utils -I/usr/local/cuda/include
+LIBRARIES = -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -L/usr/local/cuda/lib64 -lcudart
+
+CFLAGS = $(INCLUDES) $(LIBRARIES) -std=c++17 -fopenmp -O3
+CUDA_LINK_FLAGS =  -rdc=true -gencode=arch=compute_86,code=sm_86 -Xcompiler '-fPIC' $(LIBRARIES)
+CUDA_COMPILE_FLAGS = --device-c -gencode=arch=compute_86,code=sm_86 -Xcompiler '-fPIC' -g -O3 $(INCLUDES)
+
+SRC = main.cpp utils/*.c utils/*.cpp
 EXE = ripple_simulation
-PROF_EXE = ripple_simulation_prof
 
-all: $(EXE)
-
-$(EXE): $(SRC)
+all:
 	nvcc $(CUDA_COMPILE_FLAGS) -c utils/ripple_cuda.cu -o ripple_cuda.o
-	g++ $(SRC) -o main.o $(CFLAGS)
-	g++ $(SRC) -o main_prof.o $(PROF_FLAGS)
-	nvcc $(CUDA_LINK_FLAGS) -o $(EXE) main.o ripple_cuda.o
-	nvcc $(CUDA_LINK_FLAGS) -o $(PROF_EXE) main_prof.o ripple_cuda.o
+	g++ -c $(SRC) $(CFLAGS)
+	nvcc $(CUDA_LINK_FLAGS) -o $(EXE) *.o
 
 .PHONY: clean
 
