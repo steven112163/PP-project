@@ -18,24 +18,27 @@ public:
 
     ~Surface();
 
-    [[nodiscard]] unsigned int get_num_of_vertices(int state) const override;
+    [[nodiscard]] unsigned int get_num_of_vertices() const override;
 
     [[nodiscard]] const float *get_vertices(int state) const override;
 
-    float get_vertex(int index, int state) override;
-
-    void set_vertex(int index, float value, int state) override;
-
     [[nodiscard]] int get_surface_size() const;
 
+    [[nodiscard]] unsigned int get_num_of_normals() const override;
+
+    [[nodiscard]] const float *get_normals() const override;
+
     float *vertices[2]{};
+    float *normals{};
 
 protected:
-    int surface_size;
+    int surface_size{};
 
     int vertices_size{};
 
-    void push_vertex(glm::vec3 &vertex) override;
+    void push_vertex(glm::vec3 &vertex, int idx = 0) override;
+
+    void push_normal(glm::vec3 &normal, int idx = 0) override;
 
     void setup_surface();
 };

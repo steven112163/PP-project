@@ -21,7 +21,6 @@ void usage(const char *program_name) {
     std::cout << "Usage: " << program_name << " [options]\n"
               << "Program Options:\n"
               << "  -s  --surface    <INT>    Surface size (default: 400)\n"
-              << "  -d  --damp       <INT>    Damp coefficient (default: 20)\n"
               << "  -i  --iter       <INT>    Max iteration (default: 100)\n"
               << "  -t  --thread     <INT>    Number of threads (default: -1)\n"
               << "  -?  --help                This message\n";
@@ -32,7 +31,6 @@ int main(int argc, char **argv) {
     int damp = surface_size / 5;
     int max_iter = 100;
     int thread_count = -1;
-    bool useOmp = false;
 
     // Parse arguments
     int opt;
@@ -200,14 +198,12 @@ int main(int argc, char **argv) {
                 double coeff = -0.05 * 200 / surface_size;
                 for (int z = 0; z < surface_size; z++) {
                     for (int x = 0; x < surface_size; x++) {
-                        float x_coord = surface.get_vertex(surface_stride * z + 3 * x, water_state) * 1.3f;
-                        float z_coord = surface.get_vertex(surface_stride * z + 3 * x + 2, water_state) * 1.3f;
+                        float x_coord = surface.vertices[water_state][surface_stride * z + 3 * x] * 1.3f;
+                        float z_coord = surface.vertices[water_state][surface_stride * z + 3 * x + 2] * 1.3f;
                         float distance = std::sqrt(x_coord * x_coord + z_coord * z_coord);
                         if (distance <= 0.1f) {
-                            surface.set_vertex(surface_stride * z + 3 * x + 1,
-                                               coeff * std::cos(distance / 0.1f * 0.5 * PI) /
-                                               std::sin(distance / 0.1f * 0.5 * PI),
-                                               1 - water_state);
+                            surface.vertices[1 - water_state][surface_stride * z + 3 * x + 1] =
+                                    coeff * std::cos(distance / 0.1f * 0.5 * PI) / std::sin(distance / 0.1f * 0.5 * PI);
                         }
                     }
                 }
@@ -234,11 +230,10 @@ int main(int argc, char **argv) {
         glBindVertexArray(surface_vao);
         if (reached) {
             start = CycleTimer::currentSeconds();
-            if (thread_count == -1) {
+            if (thread_count == -1)
                 ripple_serial(&surface, water_state, damp);
-            } else {
+            else
                 ripple_omp(&surface, water_state, damp);
-            }
             end = CycleTimer::currentSeconds();
             avg_time = (avg_time * iter + end - start) / (iter + 1);
             min_time = std::min(min_time, end - start);

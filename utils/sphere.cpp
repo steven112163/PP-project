@@ -4,7 +4,7 @@ Sphere::Sphere(int num_of_subdivision) {
     this->from_subdivision(num_of_subdivision);
 }
 
-unsigned int Sphere::get_num_of_vertices(int state) const {
+unsigned int Sphere::get_num_of_vertices() const {
     return this->vertices.size();
 }
 
@@ -12,18 +12,24 @@ const float *Sphere::get_vertices(int state) const {
     return this->vertices.data();
 }
 
-float Sphere::get_vertex(int index, int state) {
-    return this->vertices[index];
+unsigned int Sphere::get_num_of_normals() const {
+    return this->normals.size();
 }
 
-void Sphere::set_vertex(int index, float value, int state) {
-    this->vertices[index] = value;
+const float *Sphere::get_normals() const {
+    return this->normals.data();
 }
 
-void Sphere::push_vertex(glm::vec3 &vertex) {
+void Sphere::push_vertex(glm::vec3 &vertex, int idx) {
     this->vertices.push_back(vertex.x);
     this->vertices.push_back(vertex.y);
     this->vertices.push_back(vertex.z);
+}
+
+void Sphere::push_normal(glm::vec3 &normal, int idx) {
+    this->normals.push_back(normal.x);
+    this->normals.push_back(normal.y);
+    this->normals.push_back(normal.z);
 }
 
 void Sphere::from_subdivision(int num_of_subdivision) {

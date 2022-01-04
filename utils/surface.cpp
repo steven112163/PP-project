@@ -6,7 +6,7 @@ Surface::Surface(int surface_size) {
     this->setup_surface();
 }
 
-unsigned int Surface::get_num_of_vertices(int state) const {
+unsigned int Surface::get_num_of_vertices() const {
     return this->vertices_size;
 }
 
@@ -14,16 +14,16 @@ const float *Surface::get_vertices(int state) const {
     return this->vertices[state];
 }
 
-float Surface::get_vertex(int index, int state) {
-    return this->vertices[state][index];
-}
-
-void Surface::set_vertex(int index, float value, int state) {
-    this->vertices[state][index] = value;
-}
-
 int Surface::get_surface_size() const {
     return this->surface_size;
+}
+
+unsigned int Surface::get_num_of_normals() const {
+    return this->vertices_size;
+}
+
+const float *Surface::get_normals() const {
+    return this->normals;
 }
 
 void Surface::setup_surface() {
@@ -31,6 +31,7 @@ void Surface::setup_surface() {
     this->vertices_size = surface_size * surface_size * 3;
     this->vertices[0] = new float[this->vertices_size];
     this->vertices[1] = new float[this->vertices_size];
+    this->normals = new float[this->vertices_size];
 
     glm::vec3 vertex(0.0f, 0.0f, 0.0f), normal(0.0f, 1.0f, 0.0f);
 
@@ -40,14 +41,8 @@ void Surface::setup_surface() {
             vertex.x = -1 + static_cast<float>(col) * step;
 
             int idx = (row * this->surface_size + col) * 3;
-            this->vertices[0][idx] = vertex.x;
-            this->vertices[0][idx + 1] = vertex.y;
-            this->vertices[0][idx + 2] = vertex.z;
-            this->vertices[1][idx] = vertex.x;
-            this->vertices[1][idx + 1] = vertex.y;
-            this->vertices[1][idx + 2] = vertex.z;
-
-            this->push_normal(normal);
+            this->push_vertex(vertex, idx);
+            this->push_normal(normal, idx);
         }
     }
 
@@ -67,7 +62,20 @@ void Surface::setup_surface() {
 Surface::~Surface() {
     delete[] this->vertices[0];
     delete[] this->vertices[1];
+    delete[] this->normals;
 }
 
-void Surface::push_vertex(glm::vec3 &vertex) {
+void Surface::push_vertex(glm::vec3 &vertex, int idx) {
+    this->vertices[0][idx] = vertex.x;
+    this->vertices[0][idx + 1] = vertex.y;
+    this->vertices[0][idx + 2] = vertex.z;
+    this->vertices[1][idx] = vertex.x;
+    this->vertices[1][idx + 1] = vertex.y;
+    this->vertices[1][idx + 2] = vertex.z;
+}
+
+void Surface::push_normal(glm::vec3 &normal, int idx) {
+    this->normals[idx] = normal.x;
+    this->normals[idx + 1] = normal.y;
+    this->normals[idx + 2] = normal.z;
 }
