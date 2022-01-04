@@ -24,7 +24,6 @@ void usage(const char *program_name) {
               << "Program Options:\n"
               << "  -s  --surface    <INT>    Surface size (default: 400)\n"
               << "  -i  --iter       <INT>    Max iteration (default: 100)\n"
-              << "  -t  --thread     <INT>    Number of threads (default: -1)\n"
               << "  -?  --help                This message\n";
 }
 
@@ -32,17 +31,15 @@ int main(int argc, char **argv) {
     int surface_size = 400;
     int damp = surface_size / 5;
     int max_iter = 100;
-    int thread_count = -1;
 
     // Parse arguments
     int opt;
     static struct option long_options[] = {
             {"surface", 1, 0, 's'},
             {"iter",    1, 0, 'i'},
-            {"thread",  1, 0, 't'},
             {"help",    0, 0, 'h'},
             {0,         0, 0, 0}};
-    while ((opt = getopt_long(argc, argv, "s:i:t:h", long_options, NULL)) != EOF) {
+    while ((opt = getopt_long(argc, argv, "s:i:h", long_options, NULL)) != EOF) {
         switch (opt) {
             case 's': {
                 surface_size = atoi(optarg);
@@ -51,10 +48,6 @@ int main(int argc, char **argv) {
             }
             case 'i': {
                 max_iter = atoi(optarg);
-                break;
-            }
-            case 't': {
-                thread_count = atoi(optarg);
                 break;
             }
             case 'h':
@@ -68,14 +61,6 @@ int main(int argc, char **argv) {
     std::cout << "Surface size: " << surface_size << "\n";
     std::cout << "Max iteration: " << max_iter << "\n";
     std::cout << "----------------------------------------------------------\n";
-
-    // Thread settings
-    if (thread_count != -1) {
-        std::cout << "----------------------------------------------------------\n";
-        std::cout << "Max system threads = " << omp_get_max_threads() << " \n";
-        std::cout << "Running with " << thread_count << " threads" << std::endl;
-        std::cout << "----------------------------------------------------------\n";
-    }
 
     // Initialize GLFW
     glfwInit();
@@ -231,8 +216,7 @@ int main(int argc, char **argv) {
         glBindVertexArray(surface_vao);
         if (reached) {
             start = CycleTimer::currentSeconds();
-            if (thread_count == -1)
-                ripple_serial(&surface, water_state, damp);
+            ripple_serial(&surface, water_state, damp);
             end = CycleTimer::currentSeconds();
             avg_time = (avg_time * iter + end - start) / (iter + 1);
             min_time = std::min(min_time, end - start);
