@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cfloat>
 #include <getopt.h>
+#include <iomanip>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -32,6 +33,7 @@ int main(int argc, char **argv) {
     int damp = surface_size / 5;
     int max_iter = 100;
     bool use_gpu = false;
+    bool csv_format = false;
 
     // Parse arguments
     int opt;
@@ -40,8 +42,9 @@ int main(int argc, char **argv) {
             {"iter",    1, 0, 'i'},
             {"gpu",     1, 0, 'g'},
             {"help",    0, 0, 'h'},
+            {"csv",     0, 0, 'c'},
             {0,         0, 0, 0}};
-    while ((opt = getopt_long(argc, argv, "s:i:g:h", long_options, NULL)) != EOF) {
+    while ((opt = getopt_long(argc, argv, "s:i:g:h:c", long_options, NULL)) != EOF) {
         switch (opt) {
             case 's': {
                 surface_size = atoi(optarg);
@@ -56,6 +59,10 @@ int main(int argc, char **argv) {
                 use_gpu = (atoi(optarg) == 1) ? true : false;
                 break;
             }
+            case 'c': {
+                csv_format = true;
+                break;
+            }
             case 'h':
             default:
                 usage(argv[0]);
@@ -63,11 +70,13 @@ int main(int argc, char **argv) {
         }
     }
 
-    std::cout << "----------------------------------------------------------\n";
-    std::cout << "Surface size: " << surface_size << "\n";
-    std::cout << "Max iteration: " << max_iter << "\n";
-    std::cout << "Use GPU: " << ((use_gpu) ? "True" : "False") << "\n";
-    std::cout << "----------------------------------------------------------\n";
+    if (!csv_format) {
+        std::cout << "----------------------------------------------------------\n";
+        std::cout << "Surface size: " << surface_size << "\n";
+        std::cout << "Max iteration: " << max_iter << "\n";
+        std::cout << "Use GPU: " << ((use_gpu) ? "True" : "False") << "\n";
+        std::cout << "----------------------------------------------------------\n";
+    }
 
     // Initialize GLFW
     glfwInit();
@@ -242,9 +251,19 @@ int main(int argc, char **argv) {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    std::cout << "Average execution time: " << avg_time * 1000 << " ms\n"
-              << "Minimum execution time: " << min_time * 1000 << " ms\n"
-              << "Maximum execution time: " << max_time * 1000 << " ms" << std::endl;
+
+    if (!csv_format) {
+        std::cout << "Average execution time: " << avg_time * 1000 << " ms\n"
+                  << "Minimum execution time: " << min_time * 1000 << " ms\n"
+                  << "Maximum execution time: " << max_time * 1000 << " ms" << std::endl;
+    } else {
+        std::cout << std::setw(4) <<
+                  surface_size << ",";
+        std::cout <<
+                  avg_time * 1000 << "," <<
+                  min_time * 1000 << "," <<
+                  max_time * 1000 << std::endl;
+    }
 
     // Deallocate and terminate
     deallocate_and_terminate(&shader,
