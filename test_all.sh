@@ -12,4 +12,4 @@ THREADS=(1 2 4 6 8)
   for i in "${THREADS[@]}"; do
     ./ripple_simulation -s "${SURFACE}" -i "${ITERATION}" -t "${i}" -c
   done
-} >"report_${SURFACE}_${ITERATION}.txt"
+} >"Reports/report_${SURFACE}_${ITERATION}.txt"

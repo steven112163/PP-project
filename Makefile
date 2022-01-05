@@ -9,7 +9,6 @@ all: $(EXE)
 
 $(EXE): $(SRC)
 	g++ $(SRC) -o $(EXE) $(CFLAGS)
-	g++ $(SRC) -o $(PROF_EXE) $(PROF_FLAGS)
 
 .PHONY: clean
 

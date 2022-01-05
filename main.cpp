@@ -69,18 +69,18 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (!csv_format) {
-        std::cout << "----------------------------------------------------------\n";
-        std::cout << "Surface size: " << surface_size << "\n";
-        std::cout << "Max iteration: " << max_iter << "\n";
-        std::cout << "----------------------------------------------------------\n";
-        // OpenMP thread settings
-        if (thread_count != -1) {
+    if (thread_count != -1) {
+        if (!csv_format) {
+            std::cout << "----------------------------------------------------------\n";
+            std::cout << "Surface size: " << surface_size << "\n";
+            std::cout << "Max iteration: " << max_iter << "\n";
+            std::cout << "----------------------------------------------------------\n";
+            // OpenMP thread settings
             std::cout << "Max system threads = " << omp_get_max_threads() << " \n";
             std::cout << "Running with " << thread_count << " threads" << std::endl;
             std::cout << "----------------------------------------------------------\n";
-            omp_set_num_threads(thread_count);
         }
+        omp_set_num_threads(thread_count);
     }
 
     // Initialize GLFW
@@ -265,9 +265,9 @@ int main(int argc, char **argv) {
         std::cout << std::setw(2) <<
                   thread_count << ",";
         std::cout <<
-                  avg_time << "," <<
-                  min_time << "," <<
-                  max_time << std::endl;
+                  avg_time * 1000 << "," <<
+                  min_time * 1000 << "," <<
+                  max_time * 1000 << std::endl;
     }
 
     // Deallocate and terminate

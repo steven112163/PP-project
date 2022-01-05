@@ -314,8 +314,8 @@ void ripple_omp(Surface *surface, int &state, int &dampI) {
     const int surface_stride = 3 * surface_size;
 #pragma omp parallel
     {
-#pragma omp for collapse (2)
-//#pragma omp for
+//#pragma omp for collapse (2)
+#pragma omp for
         for (x = 1; x < surface_size - 1; x++) {
             for (z = 1; z < surface_size - 1; z++) {
                 new_y = (surface->vertices[state][surface_stride * z + 3 * (x - 1) + 1] +
@@ -431,8 +431,8 @@ void ripple_omp(Surface *surface, int &state, int &dampI) {
 #pragma omp parallel
     {
         // Update normals
-#pragma omp for collapse(2)
-//#pragma omp for
+//#pragma omp for collapse(2)
+#pragma omp for
         for (z = 1; z < surface_size - 1; z++) {
             for (x = 1; x < surface_size - 1; x++) {
                 glm::vec3 point = glm::vec3(surface->vertices[state][surface_stride * z + 3 * x],
