@@ -42,5 +42,5 @@ sudo cp -R glad/include/* /usr/local/include/
 ### Run
 
 ```bash
-./ripple_simulation -s <surface_size> -i <max_iter> -t <thread_num>
+./ripple_simulation -s <surface_size> -i <max_iter>
 ```
